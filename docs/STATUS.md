@@ -15,9 +15,8 @@ Stav k 13. 10. 2026. Slouží jako podklad pro naplnění Workstreams boardu
 
 ## Zbývá
 
-1. **Secret `FIREBASE_SERVICE_ACCOUNT`** v obou repozitářích (Firebase → Project settings → Service accounts →
-   Generate new private key; `slacha-zpet` pro ankle-recovery, `koleno-zpet` pro acl-recovery). Bez něj upozornění neodcházejí.
-2. **Test upozornění**: Actions → Upozornění → Run workflow v obou repozitářích; v logu „Odesláno N…“.
+1. ~~Secrets `FIREBASE_SERVICE_ACCOUNT` a `VAPID_PRIVATE_KEY`~~ hotovo v obou repozitářích; testovací běh Upozornění zelený, připojení k databázi funguje (zatím 0 odběrů).
+2. **Ověřit doručení**: po zapnutí upozornění na telefonu spustit Actions → Upozornění → Run workflow a zkontrolovat, že přijde zpráva.
 3. **Telefony**: přidat appky na plochu (Android Chrome ⋮ → Instalovat aplikaci; iPhone Safari → Sdílet → Přidat na plochu),
    v Nastavení → Upozornění zapnout, u šlachy Nastavení → Nahrát plán do databáze.
 4. **Ověřit cviky** v `js/plan.js` proti návodu Fyziokliniky (stránka nebyla ze sandboxu dostupná).
