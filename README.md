@@ -35,7 +35,9 @@ GitHub Pages: workflow `.github/workflows/pages.yml` nasadí `main` na `https://
 
 ## Sdílení mezi telefony (Firebase)
 
-`js/firebase-config.js` je zatím `null`, takže data zůstávají v prohlížeči. Pro synchronizaci mezi telefonem a počítačem založ vlastní Firebase projekt podle **[docs/FIREBASE.md](docs/FIREBASE.md)** (nebo konfiguraci vlož do secretu `FIREBASE_CONFIG`).
+Appka používá stejný Firebase projekt jako Koleno zpět (`koleno-zpet`, Realtime Database v europe-west1). Data obou appek jsou oddělená kódem dvojice (`pairs/<kód>`) a pravidla v `database.rules.json` jsou shodná, takže v konzoli Firebase není potřeba nic měnit. Kdo chce vlastní projekt, postupuje podle **[docs/FIREBASE.md](docs/FIREBASE.md)** a přepíše `js/firebase-config.js` (nebo secret `FIREBASE_CONFIG`).
+
+Po prvním otevření: Nastavení → **Nahrát plán do databáze**, a odkaz pro parťáka zkopíruj tamtéž.
 
 Data: `pairs/<kód>/{profile, plan, sessions/<id>, messages/<id>, reactions/<sessionId>/<id>}`. Trénink nese u cviků `{ sets, kg? }`.
 
