@@ -4,7 +4,7 @@ Malá webová aplikace na rehabilitaci Achillovy šlachy (tendinopatie, bolest p
 
 - **Přehled** – splněné tréninky v týdnu, série týdnů, bolest šlachy, fáze plánu, milníky.
 - **Trénink** – 10týdenní plán ve třech fázích, sestava pro aktuální týden, zápis sérií a **zátěže v kg** (u výponů, s nápovědou „minule X kg“), bolest 0–10, ranní ztuhlost, pocit, poznámka.
-- **Žolík** – jízda na kole do práce nahradí nejvýš jeden trénink týdně.
+- **Žolíci** – jiná aktivita místo tréninku z plánu: kolo do práce (nejvýš 1× týdně) a KB5, kettlebelly a protažení (nejvýš 3× týdně, s odkazem na aktivitu v Suuntu). Další zápisy nad limit se uloží jako „navíc“. Cíl jde nastavit 2–7× týdně.
 - **Historie**, **Fandění**, **Nastavení** – jako u kolena.
 
 Čistý HTML/CSS/JS, žádný build.

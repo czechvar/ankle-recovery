@@ -26,13 +26,15 @@ const args = Object.fromEntries(process.argv.slice(2).map((a, i, all) => a.start
 const TZ = "Europe/Prague";
 const DAY = 86400000;
 const FIRST_RUN_WINDOW = 30 * 60000;   // při prvním běhu neposílat starou historii
-const LATEST_REMINDER_HOUR = 22;
 
 const read = f => readFileSync(resolve(root, f), "utf8");
 function loadWindowScript(file) { const ctx = { window: {} }; vm.runInNewContext(read(file), ctx); return ctx.window; }
 const APP = (read("index.html").match(/<title>([^<]+)<\/title>/) || [])[1] || "Rehabilitace";
 const VAPID_PUBLIC = (read("js/push.js").match(/VAPID_PUBLIC = "([^"]+)"/) || [])[1];
 const PLAN = loadWindowScript("js/plan.js").PLAN || {};
+// Žolíci (kolo, KB5…); starší plán má jen jednoho `joker` pro kolo.
+const JOKERS = Array.isArray(PLAN.jokers) && PLAN.jokers.length ? PLAN.jokers : PLAN.joker ? [{ id: "bike", icon: "🚲", km: true, ...PLAN.joker }] : [];
+const jokerById = id => JOKERS.find(j => j.id === id);
 
 /* ---------- čas v Praze ---------- */
 const dateIn = ts => new Intl.DateTimeFormat("en-CA", { timeZone: TZ }).format(new Date(ts));              // YYYY-MM-DD
@@ -62,7 +64,8 @@ export function planPair(code, pair, now) {
 
   Object.entries(sessions).filter(([, s]) => fresh(s)).forEach(([id, s]) => {
     const n = Object.values(s.exercises || {}).filter(v => (v && v.sets) > 0).length;
-    const what = s.kind === "bike" ? `🚲 ${Number(s.km) || 0} km na kole` : `${n} ${plural(n, "cvik", "cviky", "cviků")}`;
+    const J = jokerById(s.kind);
+    const what = J ? `${J.icon || ""} ${(PLAN.exercises || {})[J.ex]?.name || J.short || J.id}${J.km ? ` ${Number(s.km) || 0} km` : ""}${s.minutes ? ` · ${s.minutes} min` : ""}`.trim() : `${n} ${plural(n, "cvik", "cviky", "cviků")}`;
     to("partner", "sessions", { title: `${name("patient")} má odcvičeno 💪`, body: clip(`${what} · bolest ${Number(s.pain) || 0}/10${s.note ? ` · ${s.note}` : ""}`, 140), tag: `s-${id}`, url: "./?tab=history" });
   });
 
@@ -82,13 +85,12 @@ export function planPair(code, pair, now) {
   const days = Array.isArray(prof.reminderDays) ? prof.reminderDays : [0, 2, 4];
   const remHour = Number.isInteger(prof.reminderHour) ? prof.reminderHour : 18;
   let reminded = state.reminded || null;
-  if (reminded !== today && days.includes(weekdayIdx(today)) && hour >= remHour && hour < LATEST_REMINDER_HOUR) {
+  if (reminded !== today && days.includes(weekdayIdx(today)) && hour >= remHour) {
     reminded = today;
     const all = Object.values(sessions).filter(s => s && s.date);
     const goal = Math.max(1, Number(prof.weeklyGoal) || PLAN.weeklyGoal || 3);
-    const perWeek = (PLAN.joker && PLAN.joker.perWeek) || 1;
     const wk = all.filter(s => weekStart(s.date) === weekStart(today));
-    const count = wk.filter(s => s.kind !== "bike").length + Math.min(perWeek, wk.filter(s => s.kind === "bike").length);
+    const count = wk.filter(s => !jokerById(s.kind)).length + JOKERS.reduce((a, J) => a + Math.min(J.perWeek || 1, wk.filter(s => s.kind === J.id).length), 0);
     if (!all.some(s => s.date === today) && count < goal) {
       const left = goal - count;
       to("patient", "reminders", { title: `${APP}: čas na trénink`, body: `Tento týden ${count} z ${goal}. ${left === 1 ? "Ještě jeden a týden je tvůj." : `Ještě ${left} ${plural(left, "trénink", "tréninky", "tréninků")} do cíle.`}`, tag: `rem-${today}`, url: "./?tab=log" });

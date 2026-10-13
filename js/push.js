@@ -94,7 +94,7 @@ window.Push = (function () {
            <div class="list">${opts.map(([k, l]) => `<label class="check"><input type="checkbox" data-pushpref="${k}" ${prefs[k] ? "checked" : ""}> ${ctx.esc(l)}</label>`).join("")}</div>
            ${ctx.isPartner() ? "" : `<div class="field"><div class="lab">Připomínka ve dnech</div>
              <div class="seg days">${DAY_NAMES.map((d, i) => `<button type="button" data-remday="${i}" class="${days.includes(i) ? "on" : ""}">${d}</button>`).join("")}</div></div>
-             <div class="field"><label for="p-hour">V kolik</label><select id="p-hour">${Array.from({ length: 16 }, (_, i) => i + 6).map(h => `<option value="${h}" ${h === hour ? "selected" : ""}>${h}:00</option>`).join("")}</select>
+             <div class="field"><label for="p-hour">V kolik</label><select id="p-hour">${Array.from({ length: 24 }, (_, i) => i).map(h => `<option value="${h}" ${h === hour ? "selected" : ""}>${h}:00</option>`).join("")}</select>
              <p class="small muted">Jen když ten den ještě nemáš trénink a týden není splněný.</p></div>`}
            <button class="btn btn-ghost" id="push-off" type="button">Vypnout na tomto telefonu</button>`
         : `<p class="small muted">${ctx.isPartner() ? "Dostaneš upozornění, když přibude trénink nebo zpráva." : "Připomínka v tréninkové dny a upozornění na vzkazy od parťáka."}</p>

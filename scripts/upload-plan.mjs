@@ -23,7 +23,7 @@ function loadWindowScript(file) {
 }
 
 const { PLAN } = loadWindowScript("js/plan.js");
-const plan = { version: PLAN.version, name: PLAN.name, weeklyGoal: PLAN.weeklyGoal, joker: PLAN.joker || null, source: PLAN.source || null, phases: PLAN.phases, rules: PLAN.rules, exercises: PLAN.exercises, weeks: PLAN.weeks, cheers: PLAN.cheers, uploadedAt: Date.now() };
+const plan = { version: PLAN.version, name: PLAN.name, weeklyGoal: PLAN.weeklyGoal, jokers: PLAN.jokers || null, source: PLAN.source || null, phases: PLAN.phases, rules: PLAN.rules, exercises: PLAN.exercises, weeks: PLAN.weeks, cheers: PLAN.cheers, uploadedAt: Date.now() };
 const json = JSON.stringify(plan, null, 2);
 
 if (args.out) { writeFileSync(resolve(args.out), json); console.log(`Plán verze ${plan.version} zapsán do ${args.out}`); process.exit(0); }
