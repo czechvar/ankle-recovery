@@ -23,6 +23,10 @@ Hlídá se bolest při cvičení (do 3–4 z 10 je v pořádku) a **ranní ztuhl
 
 Cviky odkazují na [návod Fyziokliniky](https://fyzioklinika.cz/poradna/navody-na-cviceni/boli-me/boli-me-pata-achillova-slacha/cviky-pri-bolestech-paty-achillovy-slachy). Celý plán je v `js/plan.js` (`exercises` + `weeks`), úprava je stejná jako u kolena. Cvik s `load: true` má v zápisu políčko na kila.
 
+Další zdroje (seznam `resources` v `js/plan.js`, v appce sekce „Další zdroje“):
+
+- [Periodizace tréninku při zánětu Achillovky](https://karelholub.substack.com/p/periodizace-treninku-zanet-achilovky) (Karel Holub)
+
 Appka nenahrazuje fyzioterapeuta. Při náhlé ostré bolesti, „ráně“ v lýtku nebo otoku jdi k lékaři.
 
 ## Spuštění a nasazení

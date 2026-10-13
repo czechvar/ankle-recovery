@@ -9,6 +9,11 @@ window.PLAN = {
   name: "Silná Achillovka",
   weeklyGoal: 3,
   source: SRC,
+  // Další čtení k tématu. Appka je bere vždy z kódu, ne z databáze.
+  resources: [
+    { title: "Cviky při bolestech paty a Achillovy šlachy", author: "Fyzioklinika", url: SRC },
+    { title: "Periodizace tréninku při zánětu Achillovky", author: "Karel Holub", url: "https://karelholub.substack.com/p/periodizace-treninku-zanet-achilovky" }
+  ],
   // Žolík: jízda na kole do práce nahradí nejvýš jeden trénink týdně.
   joker: { ex: "bike", perWeek: 1, minKm: 10, defaultKm: 20 },
   phases: [

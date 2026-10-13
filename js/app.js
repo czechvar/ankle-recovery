@@ -268,7 +268,7 @@
     if (isPartner()) {
       return `<section class="section"><p class="eyebrow">Plán</p><h1>Co ${esc(her())} teď cvičí</h1>${renderWeekHeader(st)}</section>
       <section class="section"><div class="list">${st.week.items.map(it => renderExCard(it, null, true)).join("")}</div></section>
-      ${renderJokerCard(st)}${renderAllExercises()}${renderAllWeeks(st)}${renderRules()}`;
+      ${renderJokerCard(st)}${renderAllExercises()}${renderAllWeeks(st)}${renderRules()}${renderResources()}`;
     }
     const d = draft();
     const bike = d.kind === "bike";
@@ -299,7 +299,7 @@
       <button class="btn btn-primary btn-block" id="save-session" type="button" ${doneCount ? "" : "disabled"}>${bike ? (doneCount ? "Uložit jízdu" : "Zadej kilometry") : doneCount ? `Uložit trénink (${doneCount} ${plural(doneCount, "cvik", "cviky", "cviků")})` : "Označ aspoň jeden cvik"}</button>
       <button class="linkbtn" id="clear-draft" type="button">Vymazat rozpracovaný zápis</button>
     </section>
-    ${renderAllExercises()}${renderAllWeeks(st)}${renderRules()}`;
+    ${renderAllExercises()}${renderAllWeeks(st)}${renderRules()}${renderResources()}`;
   }
 
   function renderExCard(it, val, readOnly) {
@@ -363,6 +363,12 @@
 
   function renderRules() {
     return `<section class="section"><h2>Pravidla bezpečného tréninku</h2><div class="list">${plan().rules.map(r => `<div class="card-soft card"><strong>${esc(r.title)}.</strong> <span class="muted">${esc(r.text)}</span></div>`).join("")}</div></section>`;
+  }
+
+  function renderResources() {
+    const rs = (window.PLAN.resources || []).filter(r => /^https:\/\//.test(r.url || ""));
+    if (!rs.length) return "";
+    return `<section class="section"><h2>Další zdroje</h2><div class="list">${rs.map(r => `<div class="card-soft card"><a href="${esc(r.url)}" target="_blank" rel="noopener"><strong>${esc(r.title)}</strong> ↗</a>${r.author ? ` <span class="muted">· ${esc(r.author)}</span>` : ""}</div>`).join("")}</div></section>`;
   }
 
   /* ---------- historie ---------- */
