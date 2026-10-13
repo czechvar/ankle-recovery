@@ -30,13 +30,13 @@ Skript potřebuje číst všechny dvojice v databázi, což pravidla běžnému 
 
 ### 2. `VAPID_PRIVATE_KEY`
 
-Soukromý klíč pro podepisování upozornění. Veřejná polovina je v `js/push.js` (`VAPID_PUBLIC`). Hodnotu dostaneš od toho, kdo klíče vygeneroval, nebo si vygeneruj nový pár:
+Pár klíčů pro podepisování upozornění. Stejný pár může sloužit oběma appkám (koleno i šlacha).
 
-```
-npx web-push generate-vapid-keys
-```
+1. Otevři v prohlížeči `tools/vapid.html` (na webu `https://czechvar.github.io/ankle-recovery/tools/vapid.html`, nebo lokálně). Klíče vzniknou jen v prohlížeči.
+2. **Soukromý klíč** vlož jako secret `VAPID_PRIVATE_KEY` (v každém repozitáři, kde chceš upozornění).
+3. **Veřejný klíč** vlož do `js/push.js` místo `__VAPID_PUBLIC__` (nebo ho pošli tomu, kdo appku upravuje). Není tajný.
 
-a veřejný klíč přepiš v `js/push.js`. (Po změně klíče se musí upozornění na telefonech zapnout znovu.)
+Po pozdější změně klíčů je potřeba upozornění na telefonech zapnout znovu.
 
 ### 3. Vyzkoušej
 

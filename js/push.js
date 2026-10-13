@@ -4,7 +4,7 @@
 // Na iPhonu jen po přidání appky na plochu (iOS 16.4+).
 window.Push = (function () {
   // Veřejný VAPID klíč. Soukromý je jen v GitHub Secretu VAPID_PRIVATE_KEY.
-  const VAPID_PUBLIC = "BC7OJi4HE0Qtgi8Tf2YMnvvaF7-NJPTfdBfIMq16e2psOH32e3rJZjvArjZeJkygveJ6UU0LtTENqScCW1ojxFw";
+  const VAPID_PUBLIC = "__VAPID_PUBLIC__";
   const DAY_NAMES = ["Po", "Út", "St", "Čt", "Pá", "So", "Ne"];
   const DEFAULT_PREFS = { reminders: true, messages: true, reactions: true, sessions: true };
 
@@ -71,6 +71,7 @@ window.Push = (function () {
     if (!ctx.cloud) return `<section class="section card" style="display:grid;gap:12px">${head}<p class="small muted">Upozornění fungují jen se zapnutým Firebase.</p></section>`;
     if (isIOS() && !standalone()) return `<section class="section card" style="display:grid;gap:12px">${head}
       <div class="note">Na iPhonu fungují upozornění jen z appky na ploše: v Safari klepni na <strong>Sdílet</strong> → <strong>Přidat na plochu</strong> a appku otevři odtud.</div></section>`;
+    if (VAPID_PUBLIC.startsWith("__")) return `<section class="section card" style="display:grid;gap:12px">${head}<p class="small muted">Upozornění ještě nejsou nastavená (chybí klíč, viz docs/NOTIFICATIONS.md).</p></section>`;
     if (!supported()) return `<section class="section card" style="display:grid;gap:12px">${head}<p class="small muted">Tento prohlížeč upozornění neumí.</p></section>`;
     if (!ready) return `<section class="section card">${head}<p class="small muted">Načítám…</p></section>`;
 
