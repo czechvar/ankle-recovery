@@ -28,14 +28,14 @@
   let pair = params.get("pair") || LS.get("pair", null);
   if (!pair) { pair = Math.random().toString(36).slice(2, 8).toUpperCase(); }
   LS.set("pair", pair);
-  if (params.get("pair")) history.replaceState(null, "", location.pathname);
+  if (params.get("pair") || params.get("tab")) history.replaceState(null, "", location.pathname);
 
   const store = window.createStore();
   const BASE = `pairs/${pair}`;
   const EMPTY = { profile: null, sessions: null, messages: null, reactions: null, plan: null };
   const state = {
     role: LS.get("role", null),            // "patient" | "partner"
-    tab: LS.get("tab", "home"),
+    tab: params.get("tab") || LS.get("tab", "home"),
     data: { ...EMPTY },
     connected: store.mode === "local",
     draft: LS.get("draft", null),
@@ -74,6 +74,7 @@
   const her = () => profile().patientName || "parťák";
   const him = () => profile().partnerName || "fanoušek";
   const isPartner = () => state.role === "partner";
+  const pushCtx = () => ({ store, base: BASE, role: state.role, cloud: store.mode === "cloud", profile, subs: () => (state.data.push && state.data.push.subs) || {}, esc, toast, render, isPartner });
 
   /* ---------- výpočty ---------- */
   function stats() {
@@ -434,6 +435,7 @@
            <button class="btn btn-ghost" id="upload-plan" type="button">Nahrát plán do databáze (verze ${window.PLAN.version})</button>`
         : `<p class="small muted">Po zapnutí Firebase půjde plán nahrát do databáze jedním klepnutím tady.</p>`}
     </section>
+    ${window.Push ? Push.renderSection(pushCtx()) : ""}
     <section class="section card" style="display:grid;gap:12px">
       <h2>Tento telefon</h2>
       <div class="kv"><span>Role</span><div class="seg"><button type="button" data-setrole="patient" class="${state.role === "patient" ? "on" : ""}">Cvičím</button><button type="button" data-setrole="partner" class="${state.role === "partner" ? "on" : ""}">Fandím</button></div></div>
@@ -492,6 +494,7 @@
     const cp = $("#copy-link"); if (cp) cp.onclick = () => { const i = $("#s-link"); navigator.clipboard?.writeText(i.value).then(() => toast("Odkaz zkopírován")).catch(() => { i.select(); toast("Označeno, zkopíruj ručně"); }); };
     const ex = $("#export"); if (ex) ex.onclick = exportJSON;
     const rs = $("#reset-local"); if (rs) rs.onclick = () => { if (rs.dataset.armed) { ["role", "pair", "draft", "tab", "lastSeenMsg"].forEach(k => localStorage.removeItem("slacha-zpet:" + k)); location.href = location.pathname; } else { rs.dataset.armed = "1"; rs.textContent = "Opravdu odhlásit?"; } };
+    if (window.Push && state.tab === "settings") Push.bind(pushCtx(), view);
   }
 
   async function saveSession() {
@@ -557,4 +560,5 @@
   store.subscribe(BASE, val => { state.data = Object.assign({ ...EMPTY }, val || {}); render(); });
   store.onConnection(c => { state.connected = c; render(); });
   render();
+  if (window.Push) Push.init(() => { if (state.tab === "settings") render(); });
 })();

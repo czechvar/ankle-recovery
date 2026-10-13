@@ -50,11 +50,15 @@ js/plan.js              plán: cviky, týdny, fáze, pravidla, milníky
 js/store.js             úložiště: Firebase nebo localStorage
 js/charts.js            SVG grafy
 js/app.js               obrazovky a logika
+js/push.js              upozornění: odběr a nastavení
+sw.js                   service worker (zobrazení upozornění)
+manifest.webmanifest    instalace na plochu
+scripts/notify.mjs      rozesílání upozornění (GitHub Action)
 js/firebase-config.js   konfigurace Firebase (volitelná)
 scripts/upload-plan.mjs nahrání plánu do Firebase
 database.rules.json     pravidla Realtime Database
 ```
 
-## Dál
+## Upozornění
 
-- Připomínky (push notifikace) pro obě appky – koleno i šlacha.
+Připomínky tréninku a upozornění na nové tréninky, zprávy a reakce (Web Push přes GitHub Action každých 15 minut). Zapínají se v Nastavení. Jednorázové nastavení secrets: **[docs/NOTIFICATIONS.md](docs/NOTIFICATIONS.md)**.
