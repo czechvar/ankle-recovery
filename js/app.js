@@ -368,7 +368,7 @@
   function renderResources() {
     const rs = (window.PLAN.resources || []).filter(r => /^https:\/\//.test(r.url || ""));
     if (!rs.length) return "";
-    return `<section class="section"><h2>Další zdroje</h2><div class="list">${rs.map(r => `<div class="card-soft card"><a href="${esc(r.url)}" target="_blank" rel="noopener"><strong>${esc(r.title)}</strong> ↗</a>${r.author ? ` <span class="muted">· ${esc(r.author)}</span>` : ""}</div>`).join("")}</div></section>`;
+    return `<section class="section"><h2>Další zdroje</h2><div class="list">${rs.map(r => `<div class="card-soft card"><a href="${esc(r.url)}" target="_blank" rel="noopener"><strong>${esc(r.title)}</strong> ↗</a>${r.author ? ` <span class="muted">· ${esc(r.author)}</span>` : ""}${r.note ? `<div class="small muted">${esc(r.note)}</div>` : ""}</div>`).join("")}</div></section>`;
   }
 
   /* ---------- historie ---------- */

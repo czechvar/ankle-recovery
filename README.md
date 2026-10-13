@@ -25,7 +25,7 @@ Cviky odkazují na [návod Fyziokliniky](https://fyzioklinika.cz/poradna/navody-
 
 Další zdroje (seznam `resources` v `js/plan.js`, v appce sekce „Další zdroje“):
 
-- [Periodizace tréninku při zánětu Achillovky](https://karelholub.substack.com/p/periodizace-treninku-zanet-achilovky) (Karel Holub)
+- [Periodizace tréninku, zánět achilovky, intervaly, horko místo ledu](https://karelholub.substack.com/p/periodizace-treninku-zanet-achilovky) (Karel Holub, newsletter Běžím dokud můžu)
 
 Appka nenahrazuje fyzioterapeuta. Při náhlé ostré bolesti, „ráně“ v lýtku nebo otoku jdi k lékaři.
 

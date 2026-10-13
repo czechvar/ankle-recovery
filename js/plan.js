@@ -5,14 +5,14 @@
 const SRC = "https://fyzioklinika.cz/poradna/navody-na-cviceni/boli-me/boli-me-pata-achillova-slacha/cviky-pri-bolestech-paty-achillovy-slachy";
 
 window.PLAN = {
-  version: 1,
+  version: 2,
   name: "Silná Achillovka",
   weeklyGoal: 3,
   source: SRC,
   // Další čtení k tématu. Appka je bere vždy z kódu, ne z databáze.
   resources: [
     { title: "Cviky při bolestech paty a Achillovy šlachy", author: "Fyzioklinika", url: SRC },
-    { title: "Periodizace tréninku při zánětu Achillovky", author: "Karel Holub", url: "https://karelholub.substack.com/p/periodizace-treninku-zanet-achilovky" }
+    { title: "Periodizace tréninku, zánět achilovky, intervaly, horko místo ledu", author: "Karel Holub, Běžím dokud můžu", note: "Část o achilovce: příznaky, příčiny, tři fáze léčby a prevence.", url: "https://karelholub.substack.com/p/periodizace-treninku-zanet-achilovky" }
   ],
   // Žolík: jízda na kole do práce nahradí nejvýš jeden trénink týdně.
   joker: { ex: "bike", perWeek: 1, minKm: 10, defaultKm: 20 },
@@ -26,7 +26,9 @@ window.PLAN = {
     { title: "Rozhoduje druhé ráno", text: "Ranní ztuhlost a bolest při prvních krocích nesmí být horší než den předtím. Když je, příští trénink uber a týden zopakuj." },
     { title: "Pomalu a těžce", text: "Šlacha reaguje na těžký a pomalý tah, ne na švihy. Každé opakování 3 s nahoru, 3 s dolů." },
     { title: "Úplný klid nepomáhá", text: "Dlouhý klid šlachu oslabuje. Zatěžuj ji pravidelně, jen v dávce, kterou snese." },
-    { title: "Den pauzy mezi silovými tréninky", text: "Šlacha se přestavuje 24–48 h. Silový trénink obden, izometrie jdou i denně." }
+    { title: "Den pauzy mezi silovými tréninky", text: "Šlacha se přestavuje 24–48 h. Silový trénink obden, izometrie jdou i denně." },
+    { title: "Po plánu přichází prevence", text: "Běžecký objem zvyšuj pozvolna, bez skoků. Boty s mírným dropem (8–12 mm), ne minimalistické. Drž sílu lýtek a hamstringů, protahuj kotník (hluboký dřep) a střídej běh s kolem nebo plaváním." },
+    { title: "Injekce kortikoidů jen výjimečně", text: "Krátkodobě uleví, ale šlachu dlouhodobě oslabují. Raději trpělivá zátěž." }
   ],
   exercises: {
     isoboth: {
@@ -138,7 +140,7 @@ window.PLAN = {
       name: "Chůze a běh střídavě", alias: "Návrat k běhu", type: "time",
       why: "Postupný návrat k běhu po rovině, kontrolovaně.",
       steps: ["5 min svižné chůze na zahřátí.", "Střídej 1 min lehkého klusu a 1–2 min chůze.", "Skonči chůzí. Druhé ráno zkontroluj ztuhlost."],
-      tip: "Běhej obden. Rychlost a kopce až po 2 týdnech bez reakce šlachy.",
+      tip: "Běhej obden, ideálně po měkkém povrchu. Rychlost a kopce, hlavně seběhy, až po 2 týdnech bez reakce šlachy.",
       gear: "Běžecké boty s mírným dropem (8–10 mm), rovný terén.",
       avoid: ["Kopce a sprinty: zatím ne.", "Bosé nebo minimalistické boty: šlacha by dostala víc práce.", "Běh dva dny po sobě."]
     },
@@ -222,7 +224,7 @@ window.PLAN = {
         { ex: "rope", sets: 5, time: "45 s" },
         { ex: "run", sets: 1, time: "20 min", note: "2 min klus, 1 min chůze" }
       ] },
-    { week: 10, phase: 3, title: "Souvislý běh", focus: "Konec plánu. Dál výpony se zátěží 2× týdně jako prevence.",
+    { week: 10, phase: 3, title: "Souvislý běh", focus: "Konec plánu. Dál výpony se zátěží 2× týdně jako prevence, objem běhu přidávej pozvolna.",
       items: [
         { ex: "raisesingle", sets: 3, reps: 8, note: "udržovací" },
         { ex: "seated", sets: 3, reps: 8 },
