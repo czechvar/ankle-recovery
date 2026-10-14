@@ -248,6 +248,14 @@
     return (window.PLAN.phases.find(ph => ph.id === phaseId) || {}).everyday || [];
   }
 
+  // Jméno zaškrtnuté položky: nejdřív z aktuální fáze, pak z ostatních (id se mezi fázemi opakují).
+  function everydayName(id, phaseId) {
+    const ids = [phaseId, ...window.PLAN.phases.map(ph => ph.id)];
+    for (const pid of ids) { const it = everydayItems(pid).find(i => i.id === id); if (it) return it.name; }
+    return id;
+  }
+  const everydayDays = () => Object.entries(state.data.everyday || {}).map(([date, v]) => ({ date, ids: Object.keys(v || {}).filter(k => v[k]) })).filter(d => d.ids.length);
+
   // Zápis: everyday/<datum>/<id položky> = true.
   function renderEveryday(st) {
     const items = everydayItems(st.phase.id);
@@ -401,13 +409,15 @@
 
   /* ---------- historie ---------- */
   function renderHistory() {
-    const ss = sessions();
-    if (!ss.length) return `<section class="section"><h1>Historie</h1><div class="empty">Zatím žádný trénink. ${isPartner() ? "Až ho zapíše, uvidíš ho tady a můžeš zareagovat." : "První zápis je v záložce Trénink."}</div></section>`;
+    const ss = sessions(), days = everydayDays();
+    if (!ss.length && !days.length) return `<section class="section"><h1>Historie</h1><div class="empty">Zatím žádný trénink. ${isPartner() ? "Až ho zapíše, uvidíš ho tady a můžeš zareagovat." : "První zápis je v záložce Trénink."}</div></section>`;
     const reacts = state.data.reactions || {};
     const st = stats();
     const moods = ["skvěle", "dobře", "ok", "těžké", "bolelo"], swell = ["ráno bez ztuhlosti", "ráno mírně ztuhlá", "ráno výrazně ztuhlá"];
     return `<section class="section"><div class="section-head"><h1>Historie</h1><span class="muted small num">${ss.length} ${plural(ss.length, "trénink", "tréninky", "tréninků")}</span></div>
-    <div class="list">${ss.map(s => {
+    <div class="list">${[...ss.map(s => ({ date: s.date, s })), ...days.map(d => ({ date: d.date, d }))].sort((a, b) => a.date < b.date ? 1 : a.date > b.date ? -1 : a.d ? -1 : b.d ? 1 : 0).map(({ s, d }) => {
+      if (d) return `<article class="card card-soft sess"><div class="sess-head"><span class="d">${esc(fmtLong(d.date))} <span class="muted small">· během dne</span></span><span class="chip ok">${d.ids.length}×</span></div>
+        <div class="chips">${d.ids.map(id => `<span class="chip">${esc(everydayName(id, st.phase.id))}</span>`).join("")}</div></article>`;
       const SJ = jokerById(s.kind);
       const ex = SJ ? [] : Object.entries(s.exercises || {}).filter(([, v]) => (v?.sets || 0) > 0);
       const link = safeLink(s.link);
