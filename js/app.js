@@ -199,6 +199,7 @@
         ${Charts.ring(st.thisWeekCount, st.goal)}
       </div>
       ${!isPartner() && !st.trainedToday ? `<button class="btn btn-primary btn-block" data-go="log" type="button">Zapsat dnešní trénink</button>` : ""}
+      ${!isPartner() ? `<button class="linkbtn" id="log-other-day" type="button">Doplnit trénink za jiný den</button>` : ""}
       ${isPartner() ? `<button class="btn btn-primary btn-block" data-go="cheer" type="button">Napsat povzbuzení</button>` : ""}
     </section>
 
@@ -277,6 +278,11 @@
   function newDraft(kind) { return { kind: kind || "strength", date: todayISO(), exercises: {}, km: jokerById("bike")?.defaultKm || "", minutes: "", link: "", pain: 0, swelling: 0, mood: null, note: "" }; }
   function draft() { if (!state.draft) state.draft = newDraft(); if (!state.draft.exercises) state.draft.exercises = {}; return state.draft; }
   function saveDraft() { LS.set("draft", state.draft); }
+  const daysAgo = n => { const t = new Date(); t.setDate(t.getDate() - n); return toISO(t); };
+  // Úprava uloženého tréninku: zápis se načte do rozpracovaného formuláře s editId.
+  function draftFromSession(s) {
+    return { kind: s.kind || "strength", date: s.date, exercises: JSON.parse(JSON.stringify(s.exercises || {})), km: s.km ?? (jokerById("bike")?.defaultKm || ""), minutes: s.minutes || "", link: s.link || "", pain: Number(s.pain) || 0, swelling: Number(s.swelling) || 0, mood: s.mood ?? null, note: s.note || "", editId: s.id, createdAt: s.createdAt, planWeek: s.planWeek };
+  }
 
   function renderWeekHeader(st) {
     return `<div class="phase">
@@ -306,20 +312,24 @@
       ${renderJokerCard(st)}${renderAllExercises()}${renderAllWeeks(st)}${renderRules()}${renderResources()}`;
     }
     const d = draft();
+    const wk = (d.editId && plan().weeks.find(w => w.week === d.planWeek)) || st.week;
     const J = jokerById(d.kind), bike = !!J;
-    const doneCount = bike ? (!J.km || Number(d.km) > 0 ? 1 : 0) : st.week.items.filter(it => (d.exercises[it.ex]?.sets || 0) > 0).length;
+    const doneCount = bike ? (!J.km || Number(d.km) > 0 ? 1 : 0) : wk.items.filter(it => (d.exercises[it.ex]?.sets || 0) > 0).length;
     const moods = ["Skvěle", "Dobře", "Ok", "Těžké", "Bolelo"];
     const swell = ["Žádná", "Mírná", "Výrazná"];
     const kindSwitch = `<div class="seg" data-seg="kind"><button type="button" data-v="strength" class="${!bike ? "on" : ""}">Plán</button>${jokers().map(j => `<button type="button" data-v="${esc(j.id)}" class="${d.kind === j.id ? "on" : ""}">${esc(j.icon || "")} ${esc(j.short)}</button>`).join("")}</div>`;
     return `
     <section class="section">
-      <div><p class="eyebrow">Zápis tréninku</p><h1>${bike ? esc(jokerName(J)) + (d.date === todayISO() ? "" : ", " + esc(fmtLong(d.date))) : d.date === todayISO() ? "Dnešní sestava" : "Sestava " + esc(fmtLong(d.date))}</h1></div>
+      <div><p class="eyebrow">${d.editId ? "Úprava uloženého tréninku" : "Zápis tréninku"}</p><h1>${bike ? esc(jokerName(J)) + (d.date === todayISO() ? "" : ", " + esc(fmtLong(d.date))) : d.date === todayISO() ? "Dnešní sestava" : "Sestava " + esc(fmtLong(d.date))}</h1></div>
+      <div class="field"><div class="lab">Datum tréninku</div>
+        <div class="seg" data-days>${[["Dnes", 0], ["Včera", 1], ["Předevčírem", 2]].map(([l, n]) => `<button type="button" data-day="${n}" class="${d.date === daysAgo(n) ? "on" : ""}">${l}</button>`).join("")}</div>
+        <input type="date" id="f-date" value="${esc(d.date)}" max="${todayISO()}" aria-label="Jiné datum" style="margin-top:8px">
+      </div>
       ${kindSwitch}
-      ${bike ? "" : renderWeekHeader(st)}
+      ${bike ? "" : renderWeekHeader(d.editId ? { ...st, week: wk, planWeek: wk.week, planAuto: true } : st)}
       ${bike ? "" : `<div class="row" style="align-items:center"><p class="muted small">Klepni na čísla sérií, které máš hotové.</p><button class="linkbtn" id="toggle-steps" type="button" style="white-space:nowrap">${state.showSteps ? "Skrýt popisy" : "Zobrazit popisy"}</button></div>`}
-      <div class="field"><label for="f-date">Datum</label><input type="date" id="f-date" value="${esc(d.date)}" max="${todayISO()}"></div>
     </section>
-    ${bike ? renderJokerForm(st, d, J) : `<section class="section"><div class="list">${st.week.items.map(it => renderExCard(it, d.exercises[it.ex] || { sets: 0 }, false)).join("")}</div></section>`}
+    ${bike ? renderJokerForm(st, d, J) : `<section class="section"><div class="list">${wk.items.map(it => renderExCard(it, d.exercises[it.ex] || { sets: 0 }, false)).join("")}</div></section>`}
 
     <section class="section card" style="display:grid;gap:16px">
       <div class="field">
@@ -331,8 +341,8 @@
       <div class="field"><div class="lab">Ranní ztuhlost šlachy (dnes ráno)</div><div class="seg" data-seg="swelling">${swell.map((s, i) => `<button type="button" data-v="${i}" class="${d.swelling === i ? "on" : ""}">${s}</button>`).join("")}</div></div>
       <div class="field"><div class="lab">Jak to šlo</div><div class="seg" data-seg="mood">${moods.map((s, i) => `<button type="button" data-v="${i}" class="${d.mood === i ? "on" : ""}">${s}</button>`).join("")}</div></div>
       <div class="field"><label for="f-note">Poznámka</label><textarea id="f-note" placeholder="${bike ? esc(J.placeholder || "") : "Např. výpony s 8 kg, první kroky ráno bez bolesti…"}">${esc(d.note)}</textarea></div>
-      <button class="btn btn-primary btn-block" id="save-session" type="button" ${doneCount ? "" : "disabled"}>${bike ? (doneCount ? `Uložit: ${esc(J.short)}` : "Zadej kilometry") : doneCount ? `Uložit trénink (${doneCount} ${plural(doneCount, "cvik", "cviky", "cviků")})` : "Označ aspoň jeden cvik"}</button>
-      <button class="linkbtn" id="clear-draft" type="button">Vymazat rozpracovaný zápis</button>
+      <button class="btn btn-primary btn-block" id="save-session" type="button" ${doneCount ? "" : "disabled"}>${d.editId && doneCount ? "Uložit změny" : `${bike ? (doneCount ? `Uložit: ${esc(J.short)}` : "Zadej kilometry") : doneCount ? `Uložit trénink (${doneCount} ${plural(doneCount, "cvik", "cviky", "cviků")})` : "Označ aspoň jeden cvik"}`}</button>
+      <button class="linkbtn" id="clear-draft" type="button">${d.editId ? "Zrušit úpravu" : "Vymazat rozpracovaný zápis"}</button>
     </section>
     ${renderAllExercises()}${renderAllWeeks(st)}${renderRules()}${renderResources()}`;
   }
@@ -431,7 +441,7 @@
         ${s.note ? `<p class="small">${esc(s.note)}</p>` : ""}
         <div class="reacts">
           ${["💪", "❤️", "🔥", "👏"].map(em => `<button type="button" class="react ${counts[em]?.mine ? "mine" : ""}" data-react="${em}" data-sid="${s.id}">${em}${counts[em] ? `<span class="c num">${counts[em].n}</span>` : ""}</button>`).join("")}
-          ${!isPartner() ? `<button type="button" class="linkbtn" data-del="${s.id}" style="margin-left:auto">Smazat</button>` : ""}
+          ${!isPartner() ? `<button type="button" class="linkbtn" data-edit="${s.id}" style="margin-left:auto">Upravit</button><button type="button" class="linkbtn" data-del="${s.id}">Smazat</button>` : ""}
         </div>
       </article>`;
     }).join("")}</div></section>`;
@@ -516,6 +526,9 @@
     });
     view.querySelectorAll("[data-kg]").forEach(i => i.onchange = () => { const d = draft(), id = i.dataset.kg; d.exercises[id] = { sets: 0, ...d.exercises[id], kg: i.value === "" ? null : Number(i.value) }; saveDraft(); });
     const tw = $("#toggle-weeks"); if (tw) tw.onclick = () => { state.showAllWeeks = !state.showAllWeeks; render(); };
+    view.querySelectorAll("[data-day]").forEach(b => b.onclick = () => { draft().date = daysAgo(Number(b.dataset.day)); saveDraft(); render(); });
+    view.querySelectorAll("[data-edit]").forEach(b => b.onclick = () => { const s = sessions().find(x => x.id === b.dataset.edit); if (!s) return; state.draft = draftFromSession(s); saveDraft(); go("log"); });
+    const lod = $("#log-other-day"); if (lod) lod.onclick = () => { if (draft().editId) state.draft = newDraft(); draft().date = daysAgo(1); saveDraft(); go("log"); };
     const date = $("#f-date"); if (date) date.onchange = () => { draft().date = date.value || todayISO(); saveDraft(); render(); };
     const pain = $("#f-pain"); if (pain) { pain.oninput = () => { $("#pain-val").textContent = pain.value; }; pain.onchange = () => { draft().pain = Number(pain.value); saveDraft(); render(); }; }
     view.querySelectorAll("[data-seg] button").forEach(b => b.onclick = () => {
@@ -528,7 +541,9 @@
     const mins = $("#f-min"); if (mins) mins.oninput = () => { draft().minutes = mins.value; saveDraft(); };
     const note = $("#f-note"); if (note) note.oninput = () => { draft().note = note.value; saveDraft(); };
     const save = $("#save-session"); if (save) save.onclick = saveSession;
-    const clear = $("#clear-draft"); if (clear) clear.onclick = () => { state.draft = newDraft(draft().kind); saveDraft(); render(); toast("Zápis vymazán"); };
+    const clear = $("#clear-draft"); if (clear) clear.onclick = () => {
+      if (draft().editId) { state.draft = newDraft(); saveDraft(); toast("Úprava zrušena"); go("history"); return; }
+      state.draft = newDraft(draft().kind); saveDraft(); render(); toast("Zápis vymazán"); };
 
     view.querySelectorAll("[data-react]").forEach(b => b.onclick = () => toggleReaction(b.dataset.sid, b.dataset.react));
     view.querySelectorAll("[data-del]").forEach(b => b.onclick = () => confirmDelete(b));
@@ -557,6 +572,12 @@
       if (!Object.keys(exercises).length) return;
       sess = { date: d.date || todayISO(), kind: "strength", planWeek: st.planWeek, exercises, pain: Number(d.pain) || 0, swelling: Number(d.swelling) || 0, mood: d.mood ?? null, note: (d.note || "").trim(), createdAt: Date.now() };
     }
+    if (d.editId) {
+      Object.assign(sess, { planWeek: d.planWeek ?? sess.planWeek, createdAt: d.createdAt || sess.createdAt, updatedAt: Date.now() });
+      try { await store.set(`${BASE}/sessions/${d.editId}`, sess); state.draft = newDraft(); saveDraft(); toast("Změny uloženy"); go("history"); }
+      catch (e) { console.error(e); toast("Uložení se nepovedlo, zkus to znovu"); }
+      return;
+    }
     try {
       await store.push(`${BASE}/sessions`, sess);
       state.draft = newDraft(); saveDraft();
@@ -568,7 +589,7 @@
   }
 
   function confirmDelete(b) {
-    if (b.dataset.armed) { store.remove(`${BASE}/sessions/${b.dataset.del}`); store.remove(`${BASE}/reactions/${b.dataset.del}`); toast("Trénink smazán"); }
+    if (b.dataset.armed) { if (draft().editId === b.dataset.del) { state.draft = newDraft(); saveDraft(); } store.remove(`${BASE}/sessions/${b.dataset.del}`); store.remove(`${BASE}/reactions/${b.dataset.del}`); toast("Trénink smazán"); }
     else { b.dataset.armed = "1"; b.textContent = "Opravdu smazat?"; }
   }
 
