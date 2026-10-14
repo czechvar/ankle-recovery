@@ -256,4 +256,7 @@ code.inline { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; backg
 /* upozornění */
 .check { display: flex; align-items: center; gap: 10px; font-size: .92rem; }
 .check input { width: 18px; height: 18px; accent-color: var(--accent); }
+.check.everyday { align-items: flex-start; cursor: pointer; }
+.check.everyday input { flex: none; margin-top: 2px; }
+.check.everyday.on { background: color-mix(in srgb, var(--good) 10%, var(--surface-2)); }
 .seg.days button { flex: 1 1 0; padding: 8px 0; }

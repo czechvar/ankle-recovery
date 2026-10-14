@@ -5,7 +5,7 @@
 const SRC = "https://fyzioklinika.cz/poradna/navody-na-cviceni/boli-me/boli-me-pata-achillova-slacha/cviky-pri-bolestech-paty-achillovy-slachy";
 
 window.PLAN = {
-  version: 4,
+  version: 5,
   name: "Silná Achillovka",
   weeklyGoal: 3,
   source: SRC,
@@ -21,27 +21,27 @@ window.PLAN = {
   ],
   phases: [
     { id: 1, name: "Zklidnění", range: "týdny 1–2", summary: "Šlacha bolí i při chůzi. Žádné švihy ani skoky. Izometrické výdrže tlumí bolest, horní tělo a střed těla cvič vsedě nebo vleže.",
-      // Přirozený pohyb během dne. Nezapisuje se, jen doplňuje trénink.
+      // Přirozený pohyb během dne. Odškrtává se zvlášť, do tréninků se nepočítá.
       everyday: [
-        { name: "Ráno před prvním krokem", text: "Ještě v posteli 20× přitáhni a natáhni špičky a pár kroužků kotníkem. První kroky pak tolik nebolí." },
-        { name: "Výdrž při čištění zubů", text: "Obounož do polovičního výponu a vydrž 30 s. Dvakrát za čištění." },
-        { name: "Schody nahoru", text: "Klidně, celým chodidlem, ruka na zábradlí. Když bolí víc než 3 z 10, jeď výtahem." },
-        { name: "Schody dolů", text: "Pomalu, po jednom schodu. Seběh šlachu zatěžuje nejvíc, zatím ne." },
-        { name: "Chůze", text: "Krátké procházky po rovině v botách s mírným dropem. Doma ne bosky po tvrdé podlaze." }
+        { id: "morning", name: "Ráno před prvním krokem", text: "Ještě v posteli 20× přitáhni a natáhni špičky a pár kroužků kotníkem. První kroky pak tolik nebolí." },
+        { id: "teeth", name: "Výdrž při čištění zubů", text: "Obounož do polovičního výponu a vydrž 30 s. Dvakrát za čištění." },
+        { id: "stairs-up", name: "Schody nahoru", text: "Klidně, celým chodidlem, ruka na zábradlí. Když bolí víc než 3 z 10, jeď výtahem." },
+        { id: "stairs-down", name: "Schody dolů", text: "Pomalu, po jednom schodu. Seběh šlachu zatěžuje nejvíc, zatím ne." },
+        { id: "walk", name: "Chůze", text: "Krátké procházky po rovině v botách s mírným dropem. Doma ne bosky po tvrdé podlaze." }
       ] },
     { id: 2, name: "Síla šlachy", range: "týdny 3–7", summary: "Chůze už nebolí. Těžké a pomalé výpony (HSR) a excentrické spouštění. 70–85 % maxima, 6–12 opakování, 3 série, pauza 1–2 min.",
       everyday: [
-        { name: "Schody místo výtahu", text: "Nahoru normálním tempem, celé chodidlo na schodu. Posledních pár schodů přes špičku, pomalu." },
-        { name: "Výpony při čištění zubů", text: "15 pomalých výponů obounož, později na bolavé noze. Ve dny bez tréninku stačí." },
-        { name: "Výdrž při čekání", text: "Na tramvaj nebo ve frontě: pár výdrží ve výponu po 10–20 s." },
-        { name: "Delší procházky", text: "Půl hodiny až hodina, klidně do mírného kopce. Z kopce zatím pomalu." }
+        { id: "stairs", name: "Schody místo výtahu", text: "Nahoru normálním tempem, celé chodidlo na schodu. Posledních pár schodů přes špičku, pomalu." },
+        { id: "teeth", name: "Výpony při čištění zubů", text: "15 pomalých výponů obounož, později na bolavé noze. Ve dny bez tréninku stačí." },
+        { id: "wait", name: "Výdrž při čekání", text: "Na tramvaj nebo ve frontě: pár výdrží ve výponu po 10–20 s." },
+        { id: "walk", name: "Delší procházky", text: "Půl hodiny až hodina, klidně do mírného kopce. Z kopce zatím pomalu." }
       ] },
     { id: 3, name: "Pružnost a běh", range: "týdny 8–10", summary: "Šlacha znovu snáší rychlou zátěž: poskoky, švihadlo a postupný návrat k běhu. Síla zůstává 2× týdně.",
       everyday: [
-        { name: "Schody svižně", text: "Nahoru rychleji, klidně ob schod. Dolů už normálně, ale ještě ne seběhem." },
-        { name: "Výpony na jedné noze", text: "Při čištění zubů 10–15 výponů na každé noze." },
-        { name: "Chůze v terénu", text: "Les, tráva, nerovný povrch. Kotník a šlacha si zvyknou na různé směry." },
-        { name: "Krátký poklus", text: "Když ujíždí tramvaj, můžeš pár metrů popoběhnout. Druhé ráno zkontroluj šlachu." }
+        { id: "stairs", name: "Schody svižně", text: "Nahoru rychleji, klidně ob schod. Dolů už normálně, ale ještě ne seběhem." },
+        { id: "teeth", name: "Výpony na jedné noze", text: "Při čištění zubů 10–15 výponů na každé noze." },
+        { id: "terrain", name: "Chůze v terénu", text: "Les, tráva, nerovný povrch. Kotník a šlacha si zvyknou na různé směry." },
+        { id: "jog", name: "Krátký poklus", text: "Když ujíždí tramvaj, můžeš pár metrů popoběhnout. Druhé ráno zkontroluj šlachu." }
       ] }
   ],
   rules: [
