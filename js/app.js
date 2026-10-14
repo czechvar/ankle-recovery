@@ -266,14 +266,17 @@
     // Odškrtnuté položky z jiné fáze ať jdou pořád odebrat.
     const extra = Object.keys(done).filter(id => done[id] && !items.some(i => i.id === id)).map(id => ({ id, name: everydayName(id, st.phase.id), text: "" }));
     const all = [...items, ...extra];
-    const doneDay = all.filter(i => done[i.id]).length;
+    // Odškrtnuté se sbalí dolů do „Hotovo“, ať zůstane vidět jen to, co zbývá.
+    const todo = all.filter(i => !done[i.id]), doneItems = all.filter(i => done[i.id]);
+    const doneDay = doneItems.length;
     const thisWeek = Object.entries(log).filter(([d]) => weekKey(d) === weekKey(day)).reduce((n, [, v]) => n + Object.values(v || {}).filter(Boolean).length, 0);
     const ro = isPartner();
     const dayLabel = day === today ? "dnes" : day === daysAgo(1) ? "včera" : fmtLong(day);
     return `<section class="section" id="everyday"><div class="section-head"><h2>Během dne</h2><span class="small muted">${esc(dayLabel)} ${doneDay} z ${all.length} · týden ${thisWeek}×</span></div>
       ${ro ? "" : `<div class="seg" style="margin-bottom:8px">${[["Dnes", 0], ["Včera", 1], ["Předevčírem", 2]].map(([l, n]) => `<button type="button" data-ev-day="${n}" class="${day === daysAgo(n) ? "on" : ""}">${l}</button>`).join("")}</div>
       <input type="date" id="ev-date" value="${esc(day)}" max="${today}" aria-label="Jiný den" style="margin-bottom:10px">`}
-      <div class="list">${all.map(i => `<label class="card-soft card small check everyday${done[i.id] ? " on" : ""}"><input type="checkbox" data-everyday="${esc(i.id)}"${done[i.id] ? " checked" : ""}${ro ? " disabled" : ""}><span><strong>${esc(i.name)}.</strong>${i.text ? ` <span class="muted">${esc(i.text)}</span>` : ""}</span></label>`).join("")}</div>
+      ${todo.length ? `<div class="list">${todo.map(i => `<label class="card-soft card small check everyday"><input type="checkbox" data-everyday="${esc(i.id)}"${ro ? " disabled" : ""}><span><strong>${esc(i.name)}.</strong>${i.text ? ` <span class="muted">${esc(i.text)}</span>` : ""}</span></label>`).join("")}</div>` : `<div class="card-soft card small everyday-all">Všechno hotovo 👏</div>`}
+      ${doneItems.length ? `<p class="ex-lab" style="margin-top:12px">Hotovo</p><div class="everyday-done">${doneItems.map(i => `<label class="check everyday-mini"><input type="checkbox" data-everyday="${esc(i.id)}" checked${ro ? " disabled" : ""}><span>${esc(i.name)}</span></label>`).join("")}</div>` : ""}
       <p class="small muted" style="margin-top:6px">${ro ? `Odškrtává ${esc(her())}. Do tréninků se nepočítá.` : day === today ? "Odškrtni, co dnes zvládneš. Do tréninků se nepočítá." : `Doplňuješ ${esc(fmtLong(day))}. Do tréninků se nepočítá.`}</p></section>`;
   }
 
