@@ -258,5 +258,7 @@ code.inline { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; backg
 .check input { width: 18px; height: 18px; accent-color: var(--accent); }
 .check.everyday { align-items: flex-start; cursor: pointer; }
 .check.everyday input { flex: none; margin-top: 2px; }
-.check.everyday.on { background: color-mix(in srgb, var(--good) 10%, var(--surface-2)); }
+.everyday-all { background: color-mix(in srgb, var(--good) 10%, var(--surface-2)); font-weight: 600; }
+.everyday-done { display: grid; gap: 6px; }
+.check.everyday-mini { font-size: .85rem; color: var(--fg-muted); text-decoration: line-through; cursor: pointer; }
 .seg.days button { flex: 1 1 0; padding: 8px 0; }

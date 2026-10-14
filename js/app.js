@@ -257,17 +257,27 @@
   }
   const everydayDays = () => Object.entries(state.data.everyday || {}).map(([date, v]) => ({ date, ids: Object.keys(v || {}).filter(k => v[k]) })).filter(d => d.ids.length);
 
-  // Zápis: everyday/<datum>/<id položky> = true.
+  // Zápis: everyday/<datum>/<id položky> = true. Den jde přepnout i zpětně (state.everydayDate).
+  function everydayDate() { const d = state.everydayDate; return d && d <= todayISO() ? d : todayISO(); }
   function renderEveryday(st) {
     const items = everydayItems(st.phase.id);
     if (!items.length) return "";
-    const log = state.data.everyday || {}, today = todayISO(), done = log[today] || {};
-    const doneToday = items.filter(i => done[i.id]).length;
-    const thisWeek = Object.entries(log).filter(([d]) => weekKey(d) === weekKey(today)).reduce((n, [, v]) => n + Object.values(v || {}).filter(Boolean).length, 0);
+    const log = state.data.everyday || {}, today = todayISO(), day = everydayDate(), done = log[day] || {};
+    // Odškrtnuté položky z jiné fáze ať jdou pořád odebrat.
+    const extra = Object.keys(done).filter(id => done[id] && !items.some(i => i.id === id)).map(id => ({ id, name: everydayName(id, st.phase.id), text: "" }));
+    const all = [...items, ...extra];
+    // Odškrtnuté se sbalí dolů do „Hotovo“, ať zůstane vidět jen to, co zbývá.
+    const todo = all.filter(i => !done[i.id]), doneItems = all.filter(i => done[i.id]);
+    const doneDay = doneItems.length;
+    const thisWeek = Object.entries(log).filter(([d]) => weekKey(d) === weekKey(day)).reduce((n, [, v]) => n + Object.values(v || {}).filter(Boolean).length, 0);
     const ro = isPartner();
-    return `<section class="section"><div class="section-head"><h2>Během dne</h2><span class="small muted">dnes ${doneToday} z ${items.length} · týden ${thisWeek}×</span></div>
-      <div class="list">${items.map(i => `<label class="card-soft card small check everyday${done[i.id] ? " on" : ""}"><input type="checkbox" data-everyday="${esc(i.id)}"${done[i.id] ? " checked" : ""}${ro ? " disabled" : ""}><span><strong>${esc(i.name)}.</strong> <span class="muted">${esc(i.text)}</span></span></label>`).join("")}</div>
-      <p class="small muted" style="margin-top:6px">${ro ? `Odškrtává ${esc(her())}. Do tréninků se nepočítá.` : "Odškrtni, co dnes zvládneš. Do tréninků se nepočítá."}</p></section>`;
+    const dayLabel = day === today ? "dnes" : day === daysAgo(1) ? "včera" : fmtLong(day);
+    return `<section class="section" id="everyday"><div class="section-head"><h2>Během dne</h2><span class="small muted">${esc(dayLabel)} ${doneDay} z ${all.length} · týden ${thisWeek}×</span></div>
+      ${ro ? "" : `<div class="seg" style="margin-bottom:8px">${[["Dnes", 0], ["Včera", 1], ["Předevčírem", 2]].map(([l, n]) => `<button type="button" data-ev-day="${n}" class="${day === daysAgo(n) ? "on" : ""}">${l}</button>`).join("")}</div>
+      <input type="date" id="ev-date" value="${esc(day)}" max="${today}" aria-label="Jiný den" style="margin-bottom:10px">`}
+      ${todo.length ? `<div class="list">${todo.map(i => `<label class="card-soft card small check everyday"><input type="checkbox" data-everyday="${esc(i.id)}"${ro ? " disabled" : ""}><span><strong>${esc(i.name)}.</strong>${i.text ? ` <span class="muted">${esc(i.text)}</span>` : ""}</span></label>`).join("")}</div>` : `<div class="card-soft card small everyday-all">Všechno hotovo 👏</div>`}
+      ${doneItems.length ? `<p class="ex-lab" style="margin-top:12px">Hotovo</p><div class="everyday-done">${doneItems.map(i => `<label class="check everyday-mini"><input type="checkbox" data-everyday="${esc(i.id)}" checked${ro ? " disabled" : ""}><span>${esc(i.name)}</span></label>`).join("")}</div>` : ""}
+      <p class="small muted" style="margin-top:6px">${ro ? `Odškrtává ${esc(her())}. Do tréninků se nepočítá.` : day === today ? "Odškrtni, co dnes zvládneš. Do tréninků se nepočítá." : `Doplňuješ ${esc(fmtLong(day))}. Do tréninků se nepočítá.`}</p></section>`;
   }
 
   function renderMilestones(st) {
@@ -427,7 +437,8 @@
     return `<section class="section"><div class="section-head"><h1>Historie</h1><span class="muted small num">${ss.length} ${plural(ss.length, "trénink", "tréninky", "tréninků")}</span></div>
     <div class="list">${[...ss.map(s => ({ date: s.date, s })), ...days.map(d => ({ date: d.date, d }))].sort((a, b) => a.date < b.date ? 1 : a.date > b.date ? -1 : a.d ? -1 : b.d ? 1 : 0).map(({ s, d }) => {
       if (d) return `<article class="card card-soft sess"><div class="sess-head"><span class="d">${esc(fmtLong(d.date))} <span class="muted small">· během dne</span></span><span class="chip ok">${d.ids.length}×</span></div>
-        <div class="chips">${d.ids.map(id => `<span class="chip">${esc(everydayName(id, st.phase.id))}</span>`).join("")}</div></article>`;
+        <div class="chips">${d.ids.map(id => `<span class="chip">${esc(everydayName(id, st.phase.id))}</span>`).join("")}</div>
+        ${!isPartner() ? `<div class="reacts"><button type="button" class="linkbtn" data-ev-edit="${esc(d.date)}" style="margin-left:auto">Upravit</button></div>` : ""}</article>`;
       const SJ = jokerById(s.kind);
       const ex = SJ ? [] : Object.entries(s.exercises || {}).filter(([, v]) => (v?.sets || 0) > 0);
       const link = safeLink(s.link);
@@ -517,7 +528,10 @@
     view.querySelectorAll("[data-go]").forEach(b => b.onclick = () => go(b.dataset.go));
     view.querySelectorAll("[data-toggle]").forEach(b => b.onclick = () => { const id = b.dataset.toggle; const cur = state.openEx[id] !== undefined ? state.openEx[id] : state.showSteps; state.openEx[id] = !cur; render(); });
     const ts = $("#toggle-steps"); if (ts) ts.onclick = () => { state.showSteps = !state.showSteps; state.openEx = {}; LS.set("showSteps", state.showSteps); render(); };
-    view.querySelectorAll("[data-everyday]").forEach(c => c.onchange = () => store.set(`${BASE}/everyday/${todayISO()}/${c.dataset.everyday}`, c.checked ? true : null));
+    view.querySelectorAll("[data-everyday]").forEach(c => c.onchange = () => store.set(`${BASE}/everyday/${everydayDate()}/${c.dataset.everyday}`, c.checked ? true : null));
+    view.querySelectorAll("[data-ev-day]").forEach(b => b.onclick = () => { state.everydayDate = daysAgo(Number(b.dataset.evDay)); render(); });
+    const evd = $("#ev-date"); if (evd) evd.onchange = () => { state.everydayDate = evd.value || todayISO(); render(); };
+    view.querySelectorAll("[data-ev-edit]").forEach(b => b.onclick = () => { state.everydayDate = b.dataset.evEdit; go("home"); const el = $("#everyday"); if (el) el.scrollIntoView(); });
     const te = $("#toggle-ex"); if (te) te.onclick = () => { state.showAllEx = !state.showAllEx; render(); };
     view.querySelectorAll("[data-set]").forEach(b => b.onclick = () => {
       const d = draft(), id = b.dataset.set, n = Number(b.dataset.n);
