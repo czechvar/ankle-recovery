@@ -35,6 +35,14 @@ jobs:
           printf 'window.FIREBASE_CONFIG = %s;\n' "$FIREBASE_CONFIG" > js/firebase-config.js
           echo "Konfigurace Firebase vložena ze secretu."
 
+      # Telefon jinak může držet starý app.js z mezipaměti. Každé nasazení dostane
+      # vlastní ?v=<commit> u skriptů a stylu a číslo sestavení v Nastavení.
+      - name: Označit soubory verzí
+        run: |
+          v="${GITHUB_SHA::7}"
+          sed -i -E "s#(src=\"js/[a-z-]+\.js)\"#\1?v=$v\"#; s#(href=\"css/style\.css)\"#\1?v=$v\"#; s#__BUILD__#$v#" index.html
+          grep -n "?v=$v" index.html
+
       - uses: actions/configure-pages@v5
         with:
           enablement: true
