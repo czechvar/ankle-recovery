@@ -5,7 +5,7 @@
 const SRC = "https://fyzioklinika.cz/poradna/navody-na-cviceni/boli-me/boli-me-pata-achillova-slacha/cviky-pri-bolestech-paty-achillovy-slachy";
 
 window.PLAN = {
-  version: 3,
+  version: 4,
   name: "Silná Achillovka",
   weeklyGoal: 3,
   source: SRC,
@@ -20,9 +20,29 @@ window.PLAN = {
     { id: "kb5", ex: "kb5", short: "KB5", icon: "🏋️", perWeek: 3, link: true, placeholder: "Např. swingy 16 kg, protažení, šlacha v klidu…" }
   ],
   phases: [
-    { id: 1, name: "Zklidnění", range: "týdny 1–2", summary: "Šlacha bolí i při chůzi. Žádné švihy ani skoky. Izometrické výdrže tlumí bolest, horní tělo a střed těla cvič vsedě nebo vleže." },
-    { id: 2, name: "Síla šlachy", range: "týdny 3–7", summary: "Chůze už nebolí. Těžké a pomalé výpony (HSR) a excentrické spouštění. 70–85 % maxima, 6–12 opakování, 3 série, pauza 1–2 min." },
-    { id: 3, name: "Pružnost a běh", range: "týdny 8–10", summary: "Šlacha znovu snáší rychlou zátěž: poskoky, švihadlo a postupný návrat k běhu. Síla zůstává 2× týdně." }
+    { id: 1, name: "Zklidnění", range: "týdny 1–2", summary: "Šlacha bolí i při chůzi. Žádné švihy ani skoky. Izometrické výdrže tlumí bolest, horní tělo a střed těla cvič vsedě nebo vleže.",
+      // Přirozený pohyb během dne. Nezapisuje se, jen doplňuje trénink.
+      everyday: [
+        { name: "Ráno před prvním krokem", text: "Ještě v posteli 20× přitáhni a natáhni špičky a pár kroužků kotníkem. První kroky pak tolik nebolí." },
+        { name: "Výdrž při čištění zubů", text: "Obounož do polovičního výponu a vydrž 30 s. Dvakrát za čištění." },
+        { name: "Schody nahoru", text: "Klidně, celým chodidlem, ruka na zábradlí. Když bolí víc než 3 z 10, jeď výtahem." },
+        { name: "Schody dolů", text: "Pomalu, po jednom schodu. Seběh šlachu zatěžuje nejvíc, zatím ne." },
+        { name: "Chůze", text: "Krátké procházky po rovině v botách s mírným dropem. Doma ne bosky po tvrdé podlaze." }
+      ] },
+    { id: 2, name: "Síla šlachy", range: "týdny 3–7", summary: "Chůze už nebolí. Těžké a pomalé výpony (HSR) a excentrické spouštění. 70–85 % maxima, 6–12 opakování, 3 série, pauza 1–2 min.",
+      everyday: [
+        { name: "Schody místo výtahu", text: "Nahoru normálním tempem, celé chodidlo na schodu. Posledních pár schodů přes špičku, pomalu." },
+        { name: "Výpony při čištění zubů", text: "15 pomalých výponů obounož, později na bolavé noze. Ve dny bez tréninku stačí." },
+        { name: "Výdrž při čekání", text: "Na tramvaj nebo ve frontě: pár výdrží ve výponu po 10–20 s." },
+        { name: "Delší procházky", text: "Půl hodiny až hodina, klidně do mírného kopce. Z kopce zatím pomalu." }
+      ] },
+    { id: 3, name: "Pružnost a běh", range: "týdny 8–10", summary: "Šlacha znovu snáší rychlou zátěž: poskoky, švihadlo a postupný návrat k běhu. Síla zůstává 2× týdně.",
+      everyday: [
+        { name: "Schody svižně", text: "Nahoru rychleji, klidně ob schod. Dolů už normálně, ale ještě ne seběhem." },
+        { name: "Výpony na jedné noze", text: "Při čištění zubů 10–15 výponů na každé noze." },
+        { name: "Chůze v terénu", text: "Les, tráva, nerovný povrch. Kotník a šlacha si zvyknou na různé směry." },
+        { name: "Krátký poklus", text: "Když ujíždí tramvaj, můžeš pár metrů popoběhnout. Druhé ráno zkontroluj šlachu." }
+      ] }
   ],
   rules: [
     { title: "Bolest do 3 z 10 je v pořádku", text: "Během cvičení smí šlacha bolet nanejvýš na 3–4 z 10. Ostrá nebo rostoucí bolest znamená ubrat zátěž nebo cvik vynechat." },

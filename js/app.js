@@ -223,6 +223,8 @@
       </div>
     </section>
 
+    ${renderEveryday(st)}
+
     <section class="section">
       <div class="section-head"><h2>Tréninky za týden</h2><span class="small muted">posledních 8 týdnů</span></div>
       ${Charts.weeklyBars(st.weeks, st.goal)}
@@ -237,6 +239,13 @@
       <div class="section-head"><h2>Milníky</h2></div>
       ${renderMilestones(st)}
     </section>`;
+  }
+
+  // Starší plán v databázi nemá everyday, tak se vezme z vestavěného plánu.
+  function renderEveryday(st) {
+    const items = st.phase.everyday || (window.PLAN.phases.find(ph => ph.id === st.phase.id) || {}).everyday || [];
+    if (!items.length) return "";
+    return `<section class="section"><div class="section-head"><h2>Během dne</h2><span class="small muted">fáze ${st.phase.id}, nezapisuje se</span></div><div class="list">${items.map(i => `<div class="card-soft card small"><strong>${esc(i.name)}.</strong> <span class="muted">${esc(i.text)}</span></div>`).join("")}</div></section>`;
   }
 
   function renderMilestones(st) {
