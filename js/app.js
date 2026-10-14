@@ -472,6 +472,7 @@
     </section>
     <section class="section card" style="display:grid;gap:12px">
       <h2>Tréninkový plán</h2>
+      <div class="kv"><span>Sestavení appky</span><span class="small num">${esc(/^[0-9a-f]{7}$/.test(window.BUILD || "") ? window.BUILD : "vývojová")}</span></div>
       <div class="kv"><span>Používá se</span><span class="small">${planSource() === "db" ? `z databáze, verze ${esc(dbVer ?? "?")}` : `vestavěný, verze ${esc(window.PLAN.version)}`}</span></div>
       <div class="kv"><span>Rozsah</span><span class="small">${P.weeks.length} ${plural(P.weeks.length, "týden", "týdny", "týdnů")}, ${Object.keys(P.exercises).length} cviků</span></div>
       <div class="kv"><span>Žolíci</span><span class="small">${jokers().map(J => `${esc(J.short)} až ${J.perWeek}× týdně`).join(", ") || "žádní"}</span></div>
