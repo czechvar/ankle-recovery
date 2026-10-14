@@ -252,3 +252,8 @@ code.inline { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; backg
 .kg { display: flex; align-items: center; gap: 10px; margin-top: 10px; }
 .kg label { font-size: .85rem; font-weight: 600; }
 .kg input { width: 84px; }
+
+/* upozornění */
+.check { display: flex; align-items: center; gap: 10px; font-size: .92rem; }
+.check input { width: 18px; height: 18px; accent-color: var(--accent); }
+.seg.days button { flex: 1 1 0; padding: 8px 0; }

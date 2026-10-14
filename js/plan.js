@@ -5,7 +5,7 @@
 const SRC = "https://fyzioklinika.cz/poradna/navody-na-cviceni/boli-me/boli-me-pata-achillova-slacha/cviky-pri-bolestech-paty-achillovy-slachy";
 
 window.PLAN = {
-  version: 2,
+  version: 3,
   name: "Silná Achillovka",
   weeklyGoal: 3,
   source: SRC,
@@ -14,8 +14,11 @@ window.PLAN = {
     { title: "Cviky při bolestech paty a Achillovy šlachy", author: "Fyzioklinika", url: SRC },
     { title: "Periodizace tréninku, zánět achilovky, intervaly, horko místo ledu", author: "Karel Holub, Běžím dokud můžu", note: "Část o achilovce: příznaky, příčiny, tři fáze léčby a prevence.", url: "https://karelholub.substack.com/p/periodizace-treninku-zanet-achilovky" }
   ],
-  // Žolík: jízda na kole do práce nahradí nejvýš jeden trénink týdně.
-  joker: { ex: "bike", perWeek: 1, minKm: 10, defaultKm: 20 },
+  // Žolíci: jiná aktivita nahradí trénink z plánu, každá nejvýš perWeek× týdně.
+  jokers: [
+    { id: "bike", ex: "bike", short: "Kolo do práce", icon: "🚲", perWeek: 1, km: true, minKm: 10, defaultKm: 20, placeholder: "Např. protivítr, šlacha po jízdě v klidu…" },
+    { id: "kb5", ex: "kb5", short: "KB5", icon: "🏋️", perWeek: 3, link: true, placeholder: "Např. swingy 16 kg, protažení, šlacha v klidu…" }
+  ],
   phases: [
     { id: 1, name: "Zklidnění", range: "týdny 1–2", summary: "Šlacha bolí i při chůzi. Žádné švihy ani skoky. Izometrické výdrže tlumí bolest, horní tělo a střed těla cvič vsedě nebo vleže." },
     { id: 2, name: "Síla šlachy", range: "týdny 3–7", summary: "Chůze už nebolí. Těžké a pomalé výpony (HSR) a excentrické spouštění. 70–85 % maxima, 6–12 opakování, 3 série, pauza 1–2 min." },
@@ -143,6 +146,14 @@ window.PLAN = {
       tip: "Běhej obden, ideálně po měkkém povrchu. Rychlost a kopce, hlavně seběhy, až po 2 týdnech bez reakce šlachy.",
       gear: "Běžecké boty s mírným dropem (8–10 mm), rovný terén.",
       avoid: ["Kopce a sprinty: zatím ne.", "Bosé nebo minimalistické boty: šlacha by dostala víc práce.", "Běh dva dny po sobě."]
+    },
+    kb5: {
+      name: "KB5: kettlebelly a protažení", alias: "Žolík", type: "time",
+      why: "Silový trénink s kettlebelly a protažení v KB5. Drží sílu celého těla a kondici, šlachu ale cíleně nebuduje, proto výpony z plánu zůstávají hlavní. Nahradí nejvýš 3 tréninky týdně.",
+      steps: ["Rozcvičení 5–10 min, kotníky a lýtka rozhýbat v klidu.", "Kettlebell cviky (swingy, mrtvé tahy, dřepy, tlaky) s celým chodidlem na zemi.", "Na konci jemné protažení lýtka, bez dlouhého hlubokého tahu na šlachu.", "Odkaz na aktivitu ze Suunta vlož do zápisu."],
+      tip: "Když zbyde čas, přidej na konec 3 série výponů z aktuálního týdne plánu.",
+      gear: "Kettlebelly v KB5, boty s rovnou podrážkou.",
+      avoid: ["Skoky, poskoky a švihadlo před fází 3.", "Hluboké protahování lýtka přes hranu schodu, hlavně při bolesti v úponu na patě.", "Bolest šlachy nad 3–4 z 10: uber nebo cvik vynech."]
     },
     bike: {
       name: "Kolo do práce", alias: "Žolík", type: "time",

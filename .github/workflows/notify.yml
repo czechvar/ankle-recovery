@@ -1,0 +1,31 @@
+name: Upozornění
+
+# Každých 15 minut projde databázi a pošle upozornění (scripts/notify.mjs).
+# GitHub plánované běhy občas zpozdí o pár minut. Potřebné secrets:
+# FIREBASE_SERVICE_ACCOUNT a VAPID_PRIVATE_KEY (viz docs/NOTIFICATIONS.md).
+on:
+  schedule:
+    - cron: "*/15 * * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: notify
+  cancel-in-progress: false
+
+jobs:
+  notify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm install --no-save --no-audit --no-fund web-push@3.6.7
+      - run: node scripts/notify.mjs
+        env:
+          FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+          VAPID_PRIVATE_KEY: ${{ secrets.VAPID_PRIVATE_KEY }}

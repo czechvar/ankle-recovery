@@ -4,7 +4,7 @@ Malá webová aplikace na rehabilitaci Achillovy šlachy (tendinopatie, bolest p
 
 - **Přehled** – splněné tréninky v týdnu, série týdnů, bolest šlachy, fáze plánu, milníky.
 - **Trénink** – 10týdenní plán ve třech fázích, sestava pro aktuální týden, zápis sérií a **zátěže v kg** (u výponů, s nápovědou „minule X kg“), bolest 0–10, ranní ztuhlost, pocit, poznámka.
-- **Žolík** – jízda na kole do práce nahradí nejvýš jeden trénink týdně.
+- **Žolíci** – jiná aktivita místo tréninku z plánu: kolo do práce (nejvýš 1× týdně) a KB5, kettlebelly a protažení (nejvýš 3× týdně, s odkazem na aktivitu v Suuntu). Další zápisy nad limit se uloží jako „navíc“. Cíl jde nastavit 2–7× týdně.
 - **Historie**, **Fandění**, **Nastavení** – jako u kolena.
 
 Čistý HTML/CSS/JS, žádný build.
@@ -54,11 +54,15 @@ js/plan.js              plán: cviky, týdny, fáze, pravidla, milníky
 js/store.js             úložiště: Firebase nebo localStorage
 js/charts.js            SVG grafy
 js/app.js               obrazovky a logika
+js/push.js              upozornění: odběr a nastavení
+sw.js                   service worker (zobrazení upozornění)
+manifest.webmanifest    instalace na plochu
+scripts/notify.mjs      rozesílání upozornění (GitHub Action)
 js/firebase-config.js   konfigurace Firebase (volitelná)
 scripts/upload-plan.mjs nahrání plánu do Firebase
 database.rules.json     pravidla Realtime Database
 ```
 
-## Dál
+## Upozornění
 
-- Připomínky (push notifikace) pro obě appky – koleno i šlacha.
+Připomínky tréninku a upozornění na nové tréninky, zprávy a reakce (Web Push přes GitHub Action každých 15 minut). Zapínají se v Nastavení. Jednorázové nastavení secrets: **[docs/NOTIFICATIONS.md](docs/NOTIFICATIONS.md)**.
