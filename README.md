@@ -63,10 +63,6 @@ scripts/upload-plan.mjs nahrání plánu do Firebase
 database.rules.json     pravidla Realtime Database
 ```
 
-## Tělo zpět (podsložka `body-recovery/`)
-
-Druhá appka ve stejném repozitáři: trénink celého těla doma s jednoručkami, 10–15 minut denně, 8 týdnů, sestavy A/B/C na střídání. Běží na `https://czechvar.github.io/ankle-recovery/body-recovery/` s vlastním Firebase projektem (`telo-zpet`) a vlastními secrets s příponou `_TELO`. Nasazení i upozornění obstarávají workflow v kořeni. Podrobnosti: **[body-recovery/README.md](body-recovery/README.md)**.
-
 ## Upozornění
 
 Připomínky tréninku a upozornění na nové tréninky, zprávy a reakce (Web Push přes GitHub Action každých 15 minut). Zapínají se v Nastavení. Jednorázové nastavení secrets: **[docs/NOTIFICATIONS.md](docs/NOTIFICATIONS.md)**.

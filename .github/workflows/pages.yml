@@ -35,26 +35,13 @@ jobs:
           printf 'window.FIREBASE_CONFIG = %s;\n' "$FIREBASE_CONFIG" > js/firebase-config.js
           echo "Konfigurace Firebase vložena ze secretu."
 
-      # Totéž pro Tělo zpět v podsložce body-recovery/ (vlastní Firebase projekt).
-      - name: Vložit konfiguraci Firebase pro Tělo zpět ze secretu
-        env:
-          FIREBASE_CONFIG: ${{ secrets.FIREBASE_CONFIG_TELO }}
-        run: |
-          if [ -z "$FIREBASE_CONFIG" ]; then echo "Secret FIREBASE_CONFIG_TELO není nastaven, používá se body-recovery/js/firebase-config.js z repozitáře."; exit 0; fi
-          echo "$FIREBASE_CONFIG" | node -e 'let s="";process.stdin.on("data",d=>s+=d).on("end",()=>{JSON.parse(s)})' \
-            || { echo "::error::Secret FIREBASE_CONFIG_TELO není platný JSON"; exit 1; }
-          printf 'window.FIREBASE_CONFIG = %s;\n' "$FIREBASE_CONFIG" > body-recovery/js/firebase-config.js
-          echo "Konfigurace Firebase pro Tělo zpět vložena ze secretu."
-
       # Telefon jinak může držet starý app.js z mezipaměti. Každé nasazení dostane
       # vlastní ?v=<commit> u skriptů a stylu a číslo sestavení v Nastavení.
       - name: Označit soubory verzí
         run: |
           v="${GITHUB_SHA::7}"
-          for f in index.html body-recovery/index.html; do
-            sed -i -E "s#(src=\"js/[a-z-]+\.js)\"#\1?v=$v\"#; s#(href=\"css/style\.css)\"#\1?v=$v\"#; s#__BUILD__#$v#" "$f"
-            grep -n "?v=$v" "$f"
-          done
+          sed -i -E "s#(src=\"js/[a-z-]+\.js)\"#\1?v=$v\"#; s#(href=\"css/style\.css)\"#\1?v=$v\"#; s#__BUILD__#$v#" index.html
+          grep -n "?v=$v" index.html
 
       - uses: actions/configure-pages@v5
         with:

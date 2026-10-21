@@ -2,8 +2,7 @@ name: Upozornění
 
 # Každých 15 minut projde databázi a pošle upozornění (scripts/notify.mjs).
 # GitHub plánované běhy občas zpozdí o pár minut. Potřebné secrets:
-# FIREBASE_SERVICE_ACCOUNT a VAPID_PRIVATE_KEY (viz docs/NOTIFICATIONS.md),
-# pro Tělo zpět v body-recovery/ totéž s příponou _TELO.
+# FIREBASE_SERVICE_ACCOUNT a VAPID_PRIVATE_KEY (viz docs/NOTIFICATIONS.md).
 on:
   schedule:
     - cron: "*/15 * * * *"
@@ -30,9 +29,3 @@ jobs:
         env:
           FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
           VAPID_PRIVATE_KEY: ${{ secrets.VAPID_PRIVATE_KEY }}
-      # Tělo zpět: vlastní databáze a klíče. Běží i po chybě šlachy.
-      - run: node body-recovery/scripts/notify.mjs
-        if: ${{ !cancelled() }}
-        env:
-          FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_TELO }}
-          VAPID_PRIVATE_KEY: ${{ secrets.VAPID_PRIVATE_KEY_TELO }}
