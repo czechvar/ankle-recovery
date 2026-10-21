@@ -260,6 +260,8 @@ code.inline { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; backg
 .timer .btn { padding: 8px 14px; min-width: 6.5em; }
 .timer.running { background: var(--accent-soft); }
 .timer.running .timer-left { color: var(--accent); }
+.timer.rest.running { background: color-mix(in srgb, var(--deep) 14%, var(--surface)); }
+.timer.rest.running .timer-left { color: var(--deep); }
 
 /* upozornění */
 .check { display: flex; align-items: center; gap: 10px; font-size: .92rem; }

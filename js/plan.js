@@ -2,10 +2,11 @@
 // Fáze 1 izometrie a tlumení bolesti, fáze 2 těžká pomalá zátěž (HSR) a excentrické
 // výpony, fáze 3 pružnost a návrat k běhu. Stejná struktura se ukládá do databáze
 // pod pairs/<kód>/plan; appka pak použije verzi z databáze místo této vestavěné.
+// `rest` u cviku je pauza mezi sériemi pro časovač (jinak 1 min u cviků na čas, 2 min u opakování).
 const SRC = "https://fyzioklinika.cz/poradna/navody-na-cviceni/boli-me/boli-me-pata-achillova-slacha/cviky-pri-bolestech-paty-achillovy-slachy";
 
 window.PLAN = {
-  version: 5,
+  version: 6,
   name: "Silná Achillovka",
   weeklyGoal: 3,
   source: SRC,
@@ -55,7 +56,7 @@ window.PLAN = {
   ],
   exercises: {
     isoboth: {
-      name: "Výdrž ve výponu obounož", alias: "Izometrie", type: "time",
+      name: "Výdrž ve výponu obounož", alias: "Izometrie", type: "time", rest: "1 min",
       why: "Statická výdrž, kdy je šlacha pod napětím a nehýbe se. Prokazatelně tlumí bolest. Hodí se i v akutní fázi a před během.",
       steps: ["Stoupni si rovně, ruce lehce o zeď nebo opěradlo.", "Zvedni se do polovičního výponu (paty asi 5 cm nad zemí).", "Vydrž 30–45 s, dýchej, pak pomalu dolů. Pauza 1–2 min."],
       tip: "Bolest by během výdrže měla spíš klesat. Když roste, sniž výšku nebo délku výdrže.",
@@ -64,7 +65,7 @@ window.PLAN = {
       video: SRC
     },
     isoseated: {
-      name: "Výdrž vsedě se zátěží", alias: "Izometrie lýtka (soleus)", type: "time", load: true,
+      name: "Výdrž vsedě se zátěží", alias: "Izometrie lýtka (soleus)", type: "time", rest: "1 min", load: true,
       why: "Pokrčené koleno přenáší práci na hluboký lýtkový sval (soleus), který šlachu nese hlavně při chůzi a běhu.",
       steps: ["Sedni si na židli, chodidla na zemi, kolena v pravém úhlu.", "Na kolena polož zátěž (batoh, činku, lahve).", "Zvedni paty do polovičního výponu a vydrž 30–45 s."],
       gear: "Židle, zátěž na kolena (batoh s knihami, činka).",
@@ -95,7 +96,7 @@ window.PLAN = {
       avoid: ["Cviky ve stoje na špičkách nebo se skoky: zatím ne."]
     },
     raiseboth: {
-      name: "Výpony obounož", alias: "Calf raise", type: "reps", load: true,
+      name: "Výpony obounož", alias: "Calf raise", type: "reps", rest: "2 min", load: true,
       why: "První pohyb šlachy pod zátěží. Plynulý přechod z izometrie na pohyb.",
       steps: ["Stoupni si rovně, ruce lehce o zeď.", "3 s nahoru až na špičky, 1 s nahoře, 3 s dolů.", "Váha na palci a druhém prstu, kotník se nebortí."],
       tip: "Když je to snadné, přidej batoh nebo činku v ruce.",
@@ -104,7 +105,7 @@ window.PLAN = {
       video: SRC
     },
     raisesingle: {
-      name: "Výpony na jedné noze na schodu", alias: "Heavy Slow Resistance", type: "reps", load: true,
+      name: "Výpony na jedné noze na schodu", alias: "Heavy Slow Resistance", type: "reps", rest: "2 min", load: true,
       why: "Hlavní silový cvik. Těžký a pomalý tah dělá šlachu silnější a pevnější.",
       steps: ["Stoupni si přední částí chodidla bolavé nohy na schod, druhá noha volně.", "3 s nahoru, 3 s dolů až pod úroveň schodu (u úponové bolesti jen do roviny).", "Zátěž v ruce na straně bolavé nohy."],
       tip: "Váhu vol tak, aby poslední 1–2 opakování byla těžká (70–85 % maxima). Zapiš kila a příští týden přidej.",
@@ -113,7 +114,7 @@ window.PLAN = {
       video: SRC
     },
     eccentric: {
-      name: "Excentrické výpony", alias: "Spouštění na bolavé noze", type: "reps", load: true,
+      name: "Excentrické výpony", alias: "Spouštění na bolavé noze", type: "reps", rest: "2 min", load: true,
       why: "Nahoru oběma nohama, dolů jen bolavou. Brzdivá práce je pro šlachu silný a bezpečný podnět.",
       steps: ["Stoupni si na špičky obou nohou na schod.", "Zvedni zdravou nohu.", "Pomalu, 3–5 s, klesej na patu bolavé nohy. Nahoru zase oběma."],
       tip: "Polovinu sérií s propnutým kolenem, polovinu s mírně pokrčeným (soleus).",
@@ -122,7 +123,7 @@ window.PLAN = {
       video: "https://www.youtube.com/shorts/4hXBCVaOAGY"
     },
     seated: {
-      name: "Výpony vsedě se zátěží", alias: "Soleus HSR", type: "reps", load: true,
+      name: "Výpony vsedě se zátěží", alias: "Soleus HSR", type: "reps", rest: "2 min", load: true,
       why: "Soleus nese při běhu až několikanásobek váhy těla. Silný soleus šetří šlachu.",
       steps: ["Sedni si, špičky na kotouči nebo knize, zátěž na kolenou.", "3 s nahoru, 3 s dolů, plný rozsah.", "Na stroji (seated calf) stejně."],
       gear: "Židle, kotouč nebo kniha pod špičky, činka na kolena nebo stroj.",
@@ -130,7 +131,7 @@ window.PLAN = {
       video: SRC
     },
     balance: {
-      name: "Stoj na jedné noze", alias: "Propriocepce", type: "time",
+      name: "Stoj na jedné noze", alias: "Propriocepce", type: "time", rest: "30 s",
       why: "Rychlé drobné reakce kotníku. Chrání před vyvrtnutím a připravuje na běh.",
       steps: ["Stoupni si na bolavou nohu, koleno mírně pokrčené.", "Vydrž bez zakolísání."],
       tip: "Těžší varianta: zavřené oči, polštář pod nohou nebo házení míčkem.",
@@ -138,7 +139,7 @@ window.PLAN = {
       avoid: ["Zamčené koleno.", "Kotník padá dovnitř: váha na celé chodidlo."]
     },
     pogo: {
-      name: "Poskoky snožmo", alias: "Pogo", type: "reps",
+      name: "Poskoky snožmo", alias: "Pogo", type: "reps", rest: "1 min",
       why: "Šlacha je pružina. Krátké nízké poskoky ji učí znovu ukládat a vracet energii.",
       steps: ["Stůj na špičkách, kolena skoro propnutá.", "Drobné rychlé poskoky na místě, jen z kotníků.", "Měkký dopad na přední část chodidla."],
       tip: "Začni 2× 10 poskoků. Když druhé ráno nic, přidej.",
@@ -146,14 +147,14 @@ window.PLAN = {
       avoid: ["Vysoké skoky: stačí pár centimetrů.", "Dopad na paty.", "Skákání s bolestí nad 3/10."]
     },
     hop: {
-      name: "Poskoky na jedné noze", alias: "Single-leg hop", type: "reps",
+      name: "Poskoky na jedné noze", alias: "Single-leg hop", type: "reps", rest: "1 min",
       why: "Plná pružná zátěž jedné šlachy, poslední krok před během.",
       steps: ["Stoupni si na bolavou nohu.", "Nízké poskoky na místě, pak dopředu a dozadu.", "Měkký a tichý dopad."],
       gear: "Rovná podlaha, sportovní boty.",
       avoid: ["Tvrdý hlučný dopad.", "Pokračování při bolesti."]
     },
     rope: {
-      name: "Švihadlo", alias: "Rope skipping", type: "time",
+      name: "Švihadlo", alias: "Rope skipping", type: "time", rest: "30 s",
       why: "Opakovaná lehká pružná zátěž, příprava na rytmus běhu.",
       steps: ["Snožmo, nízko, na špičkách.", "Intervaly 30 s skákání, 30 s pauza."],
       gear: "Švihadlo, pevná podložka.",
