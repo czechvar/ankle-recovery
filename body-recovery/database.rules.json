@@ -1,0 +1,40 @@
+{
+  "rules": {
+    "pairs": {
+      "$pair": {
+        ".read": true,
+        ".write": true,
+        "profile": {
+          ".validate": "newData.hasChildren()"
+        },
+        "sessions": {
+          "$id": {
+            ".validate": "newData.hasChildren(['date', 'exercises', 'createdAt'])"
+          }
+        },
+        "messages": {
+          "$id": {
+            ".validate": "newData.hasChildren(['text', 'from', 'createdAt']) && newData.child('text').val().length <= 1000"
+          }
+        },
+        "reactions": {
+          "$sid": {
+            "$id": {
+              ".validate": "newData.hasChildren(['emoji', 'from', 'createdAt'])"
+            }
+          }
+        },
+        "everyday": {
+          "$date": {
+            "$item": {
+              ".validate": "newData.isBoolean()"
+            }
+          }
+        },
+        "plan": {
+          ".validate": "newData.hasChildren(['version', 'weeks', 'exercises'])"
+        }
+      }
+    }
+  }
+}

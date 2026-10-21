@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="cs">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>VAPID klíče</title>
+<style>
+  :root { --bg: #f3f5f7; --fg: #15202b; --muted: #5b6b78; --line: #d5dde3; --card: #fff; }
+  @media (prefers-color-scheme: dark) { :root { --bg: #121a20; --fg: #e8eef2; --muted: #9aabb8; --line: #2e3b46; --card: #1a242c; } }
+  body { margin: 0; background: var(--bg); color: var(--fg); font: 16px/1.5 system-ui, sans-serif; }
+  main { max-width: 640px; margin: 0 auto; padding: 24px 16px; display: grid; gap: 16px; }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 14px; display: grid; gap: 8px; }
+  code { word-break: break-all; font-size: .85rem; }
+  button { padding: 10px 14px; border-radius: 10px; border: 0; background: #4f46e5; color: #fff; font-weight: 600; }
+  .muted { color: var(--muted); font-size: .9rem; }
+</style>
+</head>
+<body>
+<main>
+  <h1>VAPID klíče pro upozornění</h1>
+  <p class="muted">Klíče se vytvoří jen v tomto prohlížeči (WebCrypto), nikam se neposílají. Stránku po zkopírování zavři.</p>
+  <button id="gen" type="button">Vygenerovat pár klíčů</button>
+  <div class="card" hidden id="out">
+    <strong>Veřejný klíč</strong><span class="muted">Patří do <code>js/push.js</code> (VAPID_PUBLIC). Není tajný.</span><code id="pub"></code>
+    <strong>Soukromý klíč</strong><span class="muted">Jen do GitHub Secretu <code>VAPID_PRIVATE_KEY</code>. Nikam jinam.</span><code id="priv"></code>
+  </div>
+</main>
+<script>
+const b64url = buf => btoa(String.fromCharCode(...new Uint8Array(buf))).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+document.getElementById("gen").onclick = async () => {
+  const kp = await crypto.subtle.generateKey({ name: "ECDSA", namedCurve: "P-256" }, true, ["sign", "verify"]);
+  document.getElementById("pub").textContent = b64url(await crypto.subtle.exportKey("raw", kp.publicKey));
+  document.getElementById("priv").textContent = (await crypto.subtle.exportKey("jwk", kp.privateKey)).d;
+  document.getElementById("out").hidden = false;
+};
+</script>
+</body>
+</html>
