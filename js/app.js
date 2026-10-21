@@ -43,6 +43,7 @@
     showAllWeeks: false,
     showAllEx: false,
     showSteps: LS.get("showSteps", true),
+    timer: null,                           // { ex, total, left, sets, endsAt, draft }
     lastSeenMsg: LS.get("lastSeenMsg", 0)
   };
 
@@ -369,7 +370,22 @@
       </div>
       <div class="ex-body small">${renderExBody(e)}</div>
       ${readOnly || !e.load ? "" : `<div class="kg"><label for="kg-${esc(it.ex)}">Zátěž</label><input type="number" id="kg-${esc(it.ex)}" data-kg="${esc(it.ex)}" inputmode="decimal" min="0" step="0.5" value="${esc(val.kg ?? "")}" placeholder="${esc(lastKg(it.ex) ?? 0)}"><span class="muted small">kg${lastKg(it.ex) !== null ? `, minule ${esc(lastKg(it.ex))}` : " navíc k tělu"}</span></div>`}
+      ${readOnly ? "" : renderTimer(it, sets, n)}
       ${readOnly ? "" : `<div class="sets"><span class="lab">${n === 1 ? "Hotovo" : "Série"}</span>${Array.from({ length: n }, (_, i) => i + 1).map(k => `<button type="button" class="setbtn ${sets >= k ? "on" : ""}" data-set="${esc(it.ex)}" data-n="${k}" aria-pressed="${sets >= k}">${n === 1 ? "✓" : k}</button>`).join("")}</div>`}
+    </div>`;
+  }
+
+  // Časovač u cviků na čas: přednastavený na délku z plánu, po doběhnutí odškrtne další sérii.
+  function renderTimer(it, sets, n) {
+    const secs = parseDuration(it.time);
+    if (!secs) return "";
+    const t = state.timer && state.timer.ex === it.ex ? state.timer : null;
+    const run = !!(t && t.endsAt);
+    const label = sets >= n ? "hotovo" : n > 1 ? `série ${sets + 1} z ${n}` : "";
+    return `<div class="timer ${run ? "running" : ""}">
+      <div class="timer-info"><span class="timer-left" id="timer-${esc(it.ex)}">${fmtClock(t ? timerLeft(t) : secs)}</span>${label ? `<span class="muted small">${label}</span>` : ""}</div>
+      ${t ? `<button class="linkbtn" id="timer-reset" type="button">Znovu</button>` : ""}
+      <button type="button" class="btn ${run ? "btn-ghost" : "btn-primary"}" data-timer="${esc(it.ex)}" data-secs="${secs}" data-sets="${n}">${run ? "Pauza" : t ? "Pokračovat" : "Start"}</button>
     </div>`;
   }
 
@@ -519,6 +535,73 @@
     </section>`;
   }
 
+  /* ---------- časovač ---------- */
+  // Délka z plánu ("30 s", "3 min") v sekundách.
+  function parseDuration(s) { const m = /(\d+(?:[.,]\d+)?)\s*(min|s)?/.exec(s || ""); if (!m) return 0; const v = Number(m[1].replace(",", ".")); return Math.round(m[2] === "min" ? v * 60 : v); }
+  const fmtClock = s => `${Math.floor(s / 60)}:${pad(s % 60)}`;
+  // Běžící časovač počítá z endsAt, takže sedí i po uspání telefonu nebo přepnutí appky.
+  const timerLeft = t => t.endsAt ? Math.max(0, Math.ceil((t.endsAt - Date.now()) / 1000)) : t.left;
+  let ticker = null, wakeLock = null, audio = null;
+
+  function toggleTimer(id, secs, sets) {
+    let t = state.timer;
+    if (!t || t.ex !== id) t = state.timer = { ex: id, total: secs, left: secs, sets, endsAt: null, draft: draft() };
+    if (t.endsAt) { t.left = timerLeft(t); t.endsAt = null; }
+    else { beep(0); t.endsAt = Date.now() + t.left * 1000; }
+    syncTicker(); render();
+  }
+  function resetTimer() { state.timer = null; syncTicker(); render(); }
+  function syncTicker() {
+    const run = !!(state.timer && state.timer.endsAt);
+    if (run && !ticker) ticker = setInterval(tickTimer, 250);
+    if (!run && ticker) { clearInterval(ticker); ticker = null; }
+    keepAwake(run);
+  }
+  function tickTimer() {
+    const t = state.timer; if (!t || !t.endsAt) return syncTicker();
+    const left = timerLeft(t), el = document.getElementById("timer-" + t.ex);
+    if (el) el.textContent = fmtClock(left);
+    if (left <= 0) finishTimer(t);
+  }
+  function finishTimer(t) {
+    state.timer = null; syncTicker();
+    beep(3); if (navigator.vibrate) navigator.vibrate([300, 150, 300, 150, 300]);
+    let msg = "Čas!";
+    // Sérii odškrtne jen v zápisu, ve kterém se časovač spustil (ne po uložení nebo vymazání).
+    if (state.draft === t.draft) {
+      const d = t.draft, done = Math.min(t.sets, (d.exercises[t.ex]?.sets || 0) + 1);
+      d.exercises[t.ex] = { ...d.exercises[t.ex], sets: done }; saveDraft();
+      msg = t.sets > 1 ? `Čas! Série ${done} z ${t.sets} hotová` : "Čas! Hotovo";
+    }
+    toast(msg); render();
+  }
+  // Obrazovka nezhasne, dokud časovač běží.
+  function keepAwake(on) {
+    // wakeLock drží slib zámku; systém ho sám uvolní při skrytí appky, po návratu se vyžádá znovu.
+    if (on && !wakeLock && navigator.wakeLock) {
+      const p = wakeLock = navigator.wakeLock.request("screen").catch(() => null);
+      p.then(l => {
+        if (!l) { if (wakeLock === p) wakeLock = null; return; }
+        l.addEventListener("release", () => { if (wakeLock === p) wakeLock = null; });
+        if (wakeLock !== p) l.release();
+      });
+    }
+    if (!on && wakeLock) { const p = wakeLock; wakeLock = null; p.then(l => l && !l.released && l.release()); }
+  }
+  // Pípnutí přes Web Audio. beep(0) při startu jen odemkne zvuk (telefon ho povolí až po klepnutí).
+  function beep(times) {
+    try {
+      audio = audio || new (window.AudioContext || window.webkitAudioContext)();
+      if (audio.state === "suspended") audio.resume();
+      for (let i = 0; i < times; i++) {
+        const o = audio.createOscillator(), g = audio.createGain(), at = audio.currentTime + i * 0.35;
+        o.frequency.value = 880; o.connect(g); g.connect(audio.destination);
+        g.gain.setValueAtTime(0.0001, at); g.gain.exponentialRampToValueAtTime(0.4, at + 0.02); g.gain.exponentialRampToValueAtTime(0.0001, at + 0.25);
+        o.start(at); o.stop(at + 0.3);
+      }
+    } catch (e) { /* bez zvuku */ }
+  }
+
   /* ---------- akce ---------- */
   function toast(msg) { const t = $("#toast"); t.textContent = msg; t.hidden = false; clearTimeout(toast.t); toast.t = setTimeout(() => { t.hidden = true; }, 2200); }
   function go(tab) { state.tab = tab; LS.set("tab", tab); if (tab === "cheer") { const last = messages().slice(-1)[0]; state.lastSeenMsg = last ? last.createdAt : state.lastSeenMsg; LS.set("lastSeenMsg", state.lastSeenMsg); } window.scrollTo(0, 0); render(); }
@@ -538,7 +621,9 @@
       d.exercises[id] = { ...d.exercises[id], sets: (d.exercises[id]?.sets === n) ? n - 1 : n };
       saveDraft(); render();
     });
-    view.querySelectorAll("[data-kg]").forEach(i => i.onchange = () => { const d = draft(), id = i.dataset.kg; d.exercises[id] = { sets: 0, ...d.exercises[id], kg: i.value === "" ? null : Number(i.value) }; saveDraft(); });
+    view.querySelectorAll("[data-timer]").forEach(b => b.onclick = () => toggleTimer(b.dataset.timer, Number(b.dataset.secs), Number(b.dataset.sets)));
+    const tr = $("#timer-reset"); if (tr) tr.onclick = resetTimer;
+    view.querySelectorAll("[data-kg]").forEach(i => i.onchange =() => { const d = draft(), id = i.dataset.kg; d.exercises[id] = { sets: 0, ...d.exercises[id], kg: i.value === "" ? null : Number(i.value) }; saveDraft(); });
     const tw = $("#toggle-weeks"); if (tw) tw.onclick = () => { state.showAllWeeks = !state.showAllWeeks; render(); };
     view.querySelectorAll("[data-day]").forEach(b => b.onclick = () => { draft().date = daysAgo(Number(b.dataset.day)); saveDraft(); render(); });
     view.querySelectorAll("[data-edit]").forEach(b => b.onclick = () => { const s = sessions().find(x => x.id === b.dataset.edit); if (!s) return; state.draft = draftFromSession(s); saveDraft(); go("log"); });
@@ -643,6 +728,7 @@
   document.querySelectorAll(".tab").forEach(t => t.onclick = () => go(t.dataset.tab));
   store.subscribe(BASE, val => { state.data = Object.assign({ ...EMPTY }, val || {}); render(); });
   store.onConnection(c => { state.connected = c; render(); });
+  document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible" && state.timer && state.timer.endsAt) { keepAwake(true); tickTimer(); } });
   render();
   if (window.Push) Push.init(() => { if (state.tab === "settings") render(); });
 })();

@@ -3,7 +3,7 @@
 Malá webová aplikace na rehabilitaci Achillovy šlachy (tendinopatie, bolest paty). Sestrojená podle [Koleno zpět](https://github.com/czechvar/acl-recovery): stejné obrazovky, stejné úložiště, jiný plán. Jeden cvičí a zapisuje, druhý (volitelně) sleduje a fandí.
 
 - **Přehled** – splněné tréninky v týdnu, série týdnů, bolest šlachy, fáze plánu, milníky.
-- **Trénink** – 10týdenní plán ve třech fázích, sestava pro aktuální týden, zápis sérií a **zátěže v kg** (u výponů, s nápovědou „minule X kg“), bolest 0–10, ranní ztuhlost, pocit, poznámka.
+- **Trénink** – 10týdenní plán ve třech fázích, sestava pro aktuální týden, zápis sérií a **zátěže v kg**, u cviků na čas **časovač** s délkou z plánu (po doběhnutí pípne a odškrtne sérii) (u výponů, s nápovědou „minule X kg“), bolest 0–10, ranní ztuhlost, pocit, poznámka.
 - **Žolíci** – jiná aktivita místo tréninku z plánu: kolo do práce (nejvýš 1× týdně) a KB5, kettlebelly a protažení (nejvýš 3× týdně, s odkazem na aktivitu v Suuntu). Další zápisy nad limit se uloží jako „navíc“. Cíl jde nastavit 2–7× týdně.
 - **Historie**, **Fandění**, **Nastavení** – jako u kolena.
 
