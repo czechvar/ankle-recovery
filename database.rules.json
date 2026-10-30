@@ -31,6 +31,13 @@
             }
           }
         },
+        "rehab": {
+          "$date": {
+            "$item": {
+              ".validate": "newData.isBoolean()"
+            }
+          }
+        },
         "plan": {
           ".validate": "newData.hasChildren(['version', 'weeks', 'exercises'])"
         }

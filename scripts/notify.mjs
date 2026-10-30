@@ -4,7 +4,8 @@
 //
 // Projde pairs/<kód> v databázi a pošle:
 //   - parťákovi: nový trénink, zprávu, reakci
-//   - cvičícímu: zprávu, reakci, připomínku v tréninkové dny (Europe/Prague)
+//   - cvičícímu: zprávu, reakci, připomínku v tréninkové dny (Europe/Prague),
+//     denně připomínku rehabky (cviky od lékaře) a den předem návštěvu kliniky
 // Co už bylo odesláno, si pamatuje v pairs/<kód>/push/state.
 //
 // Proměnné prostředí:
@@ -96,7 +97,19 @@ export function planPair(code, pair, now) {
       to("patient", "reminders", { title: `${APP}: čas na trénink`, body: `Tento týden ${count} z ${goal}. ${left === 1 ? "Ještě jeden a týden je tvůj." : `Ještě ${left} ${plural(left, "trénink", "tréninky", "tréninků")} do cíle.`}`, tag: `rem-${today}`, url: "./?tab=log" });
     }
   }
-  return { out, state: { lastCheck: now, reminded } };
+  // Rehabka: každý den v hodinu připomínky, když ještě nejsou odškrtnuté všechny cviky od lékaře.
+  // Ve stejnou chvíli připomene i zítřejší návštěvu kliniky.
+  const R = PLAN.rehab || {}, rItems = Array.isArray(R.items) ? R.items.filter(i => i && i.ex) : [];
+  let rehabReminded = state.rehabReminded || null;
+  if (rItems.length && (!R.since || today >= R.since) && rehabReminded !== today && hour >= remHour) {
+    rehabReminded = today;
+    const done = (pair.rehab || {})[today] || {};
+    const left = rItems.filter(i => !done[i.ex]).length;
+    if (left) to("patient", "reminders", { title: `${APP}: rehabka`, body: left === rItems.length ? `Dnes ještě žádný cvik od lékaře. ${rItems.length} ${plural(rItems.length, "cvik", "cviky", "cviků")} a den je kompletní.` : `Ještě ${left} ${plural(left, "cvik", "cviky", "cviků")} od lékaře a dnešek je kompletní.`, tag: `rhb-${today}`, url: "./" });
+    const tomorrow = toISO(fromISO(today) + DAY);
+    (R.visits || []).filter(v => v && v.date === tomorrow).forEach(v => to("patient", "reminders", { title: `${APP}: zítra ${v.what || "rehabka"}`, body: clip(`${v.time ? `V ${v.time}` : "Zítra"}${R.clinic?.name ? `, ${R.clinic.name}` : ""}${R.clinic?.address ? `, ${R.clinic.address}` : ""}.`, 140), tag: `visit-${v.date}`, url: "./" }));
+  }
+  return { out, state: { lastCheck: now, reminded, rehabReminded } };
 }
 
 /* ---------- přístup k databázi ---------- */

@@ -5,6 +5,7 @@ Malá webová aplikace na rehabilitaci Achillovy šlachy (tendinopatie, bolest p
 - **Přehled** – splněné tréninky v týdnu, série týdnů, bolest šlachy, fáze plánu, milníky.
 - **Trénink** – 10týdenní plán ve třech fázích, sestava pro aktuální týden, zápis sérií a **zátěže v kg**, u cviků na čas **časovač** s délkou z plánu (po doběhnutí pípne a odškrtne sérii) a mezi sériemi **pauza** s odpočtem (u výponů, s nápovědou „minule X kg“), bolest 0–10, ranní ztuhlost, pocit, poznámka.
 - **Žolíci** – jiná aktivita místo tréninku z plánu: kolo do práce (nejvýš 1× týdně) a KB5, kettlebelly a protažení (nejvýš 3× týdně, s odkazem na aktivitu v Suuntu). Další zápisy nad limit se uloží jako „navíc“. Cíl jde nastavit 2–7× týdně.
+- **Rehabka** – cviky od lékaře z rehabilitace (od 30. 10. 2026): výdrž na schodu v rovině, výpony na schodu s gumou do strany, dynamika u futer. Dělají se **každý den**, odškrtávají se na Přehledu zvlášť od tréninků, appka počítá dny v řadě a večer připomene, co ještě chybí. U sekce je nejbližší termín na klinice (RHB, laser) a odkaz na kalendář. Seznam cviků a termínů je v `js/plan.js` (`rehab`).
 - **Historie**, **Fandění**, **Nastavení** – jako u kolena.
 
 Čistý HTML/CSS/JS, žádný build.
@@ -20,6 +21,8 @@ Postaveno na principu „šlacha potřebuje zátěž, ne klid“, jen ve správn
 | 3. Pružnost a běh | 8–10 | těžké výpony bez reakce | poskoky, švihadlo, poskoky na jedné noze, chůze/běh |
 
 Hlídá se bolest při cvičení (do 3–4 z 10 je v pořádku) a **ranní ztuhlost** – když je ráno horší než den předtím, uber a týden zopakuj.
+
+Rehabka od lékaře (`rehab` v `js/plan.js`) běží vedle plánu: `items` jsou cviky s cílem (`sets`, `time` nebo `reps`), `visits` termíny na klinice, `calendar` odkaz na kalendář. Odškrtnutí se ukládá do `pairs/<kód>/rehab/<datum>/<cvik>`.
 
 Cviky odkazují na [návod Fyziokliniky](https://fyzioklinika.cz/poradna/navody-na-cviceni/boli-me/boli-me-pata-achillova-slacha/cviky-pri-bolestech-paty-achillovy-slachy). Celý plán je v `js/plan.js` (`exercises` + `weeks`), úprava je stejná jako u kolena. Cvik s `load: true` má v zápisu políčko na kila, `rest` je délka pauzy mezi sériemi.
 
