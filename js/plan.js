@@ -6,7 +6,7 @@
 const SRC = "https://fyzioklinika.cz/poradna/navody-na-cviceni/boli-me/boli-me-pata-achillova-slacha/cviky-pri-bolestech-paty-achillovy-slachy";
 
 window.PLAN = {
-  version: 6,
+  version: 7,
   name: "Silná Achillovka",
   weeklyGoal: 3,
   source: SRC,
@@ -20,6 +20,32 @@ window.PLAN = {
     { id: "bike", ex: "bike", short: "Kolo do práce", icon: "🚲", perWeek: 1, km: true, minKm: 10, defaultKm: 20, placeholder: "Např. protivítr, šlacha po jízdě v klidu…" },
     { id: "kb5", ex: "kb5", short: "KB5", icon: "🏋️", perWeek: 3, link: true, placeholder: "Např. swingy 16 kg, protažení, šlacha v klidu…" }
   ],
+  // Rehabka: cviky od lékaře (IC klinika, od 30. 10. 2026). Dělají se každý den, odškrtávají se
+  // zvlášť na Přehledu (rehab/<datum>/<cvik>) a do tréninků z plánu se nepočítají.
+  rehab: {
+    since: "2026-10-30",
+    name: "Rehabka",
+    note: "Cviky od lékaře z rehabilitace. Jednou denně, všechny tři. Klidně rozděl během dne.",
+    clinic: { name: "IC klinika, Rehabilitace & Fitness", address: "Nové sady 676/4, Brno", phone: "+420 530 347 169", hours: "Po–Čt 7–15, Pá 7–12" },
+    calendar: "https://calendar.google.com/calendar/u/0?cid=Mzg5NGViMDhlMDNhMDJjZjkwZmY0OGJjYjkwNmFhYjI1ODMyNWQzYzhkMTUyYzQ5MTRlYjcxNDRkOGMwMjNhZEBncm91cC5jYWxlbmRhci5nb29nbGUuY29t",
+    items: [
+      { ex: "rhbhold", sets: "3–4", time: "40–45 s" },
+      { ex: "rhbband", sets: "3–4", reps: "15–20" },
+      { ex: "rhbtap", sets: "3–4", reps: "15–20" }
+    ],
+    // Termíny na klinice (z kalendáře Rehabka IC). Appka ukáže nejbližší.
+    visits: [
+      { date: "2026-10-30", time: "8:00", what: "RHB #1" },
+      { date: "2026-11-06", time: "8:30", what: "RHB #2" },
+      { date: "2026-11-09", time: "13:15", what: "Laser #1" },
+      { date: "2026-11-11", time: "13:15", what: "Laser #2" },
+      { date: "2026-11-12", time: "13:45", what: "Laser #3" },
+      { date: "2026-11-13", time: "9:30", what: "RHB #3" },
+      { date: "2026-11-16", time: "8:45", what: "Laser #4" },
+      { date: "2026-11-18", time: "8:45", what: "Laser #5" },
+      { date: "2026-11-20", time: "7:30", what: "RHB #4" }
+    ]
+  },
   phases: [
     { id: 1, name: "Zklidnění", range: "týdny 1–2", summary: "Šlacha bolí i při chůzi. Žádné švihy ani skoky. Izometrické výdrže tlumí bolest, horní tělo a střed těla cvič vsedě nebo vleže.",
       // Přirozený pohyb během dne. Odškrtává se zvlášť, do tréninků se nepočítá.
@@ -168,6 +194,30 @@ window.PLAN = {
       gear: "Běžecké boty s mírným dropem (8–10 mm), rovný terén.",
       avoid: ["Kopce a sprinty: zatím ne.", "Bosé nebo minimalistické boty: šlacha by dostala víc práce.", "Běh dva dny po sobě."]
     },
+    rhbhold: {
+      name: "Výdrž na schodu v rovině", alias: "Rehabka · izometrie na hraně", type: "time", rest: "1 min",
+      why: "Cvik od lékaře. Chodidlo vodorovně s hranou schodu pod klouby prstů: šlacha drží tah v prodloužené poloze, bez pohybu. Tlumí bolest a zvyká šlachu na zátěž.",
+      steps: ["Stoupni si na schod tak, aby hrana byla pod klouby prstů (bříška prstů přes hranu). Ruka na zábradlí.", "Chodidlo srovnej do vodorovné polohy: pata ani nahoře, ani pod schodem.", "Vydrž 40–45 s, dýchej. Pak sestup a krátká pauza."],
+      tip: "Když je to snadné, ber víc váhy na bolavou nohu. Bolest nad 3–4 z 10 znamená zkrátit výdrž.",
+      gear: "Schod a zábradlí nebo zeď.",
+      avoid: ["Pata klesá pod schod: držíš vodorovně, ne protažení.", "Prsty křečovitě svírají hranu: váha je na kloubech prstů, prsty volné.", "Zamčená kolena a zadržený dech."]
+    },
+    rhbband: {
+      name: "Výpony na schodu s gumou do strany", alias: "Rehabka · nahoru a dolů", type: "reps", rest: "1 min",
+      why: "Cvik od lékaře. Stejná poloha jako výdrž, ale v pohybu. Guma tahá koleno a kotník do strany a nutí je držet osu, takže pracuje i vnější část lýtka a stabilizátory kotníku.",
+      steps: ["Gumu uvaž kolem zábradlí nebo ji podrž tak, aby tahala koleno do strany (ven nebo dovnitř, podle zadání z rehabky).", "Stoupni si na schod s hranou pod klouby prstů, ruka na zábradlí.", "Plynule nahoru na špičky a dolů do vodorovné polohy. 15–20 opakování, tempo klidné, ne švih."],
+      tip: "Kotník drž rovně proti tahu gumy, kolena ať neuhýbají. Posledních pár opakování má být cítit v lýtku.",
+      gear: "Schod, zábradlí, odporová guma.",
+      avoid: ["Guma vyhrává: koleno a kotník se nechají stáhnout do strany.", "Rychlé pérování: každé opakování pod kontrolou.", "Dolů hluboko pod schod: zatím jen do roviny."]
+    },
+    rhbtap: {
+      name: "Dynamika u futer", alias: "Rehabka · špičky", type: "reps", rest: "45 s",
+      why: "Cvik od lékaře. První rychlejší práce šlachy: z výponu rychle klesnout a špičkami plácnout o zem. Učí šlachu pružit a vracet energii, připravuje na chůzi do schodů a běh.",
+      steps: ["Opři se rukama o rám dveří (futra), nohy na šířku boků.", "Zvedni se na špičky.", "Rychle klesni dolů tak, že špičkama plácneš o zem, a hned zase nahoru. 15–20 opakování, 3–4 série."],
+      tip: "Začni opatrně, dopad má být slyšet jako plácnutí, ne dunění. Když šlacha druhé ráno reaguje, příště uber sérii.",
+      gear: "Rám dveří nebo zeď na opření, rovná podlaha.",
+      avoid: ["Tvrdý dopad na patu: dopadají špičky a přední část chodidla.", "Vysoké skoky: nohy zem neopouštějí, jen výpon a plácnutí.", "Cvičení při ostré bolesti."]
+    },
     kb5: {
       name: "KB5: kettlebelly a protažení", alias: "Žolík", type: "time",
       why: "Silový trénink s kettlebelly a protažení v KB5. Drží sílu celého těla a kondici, šlachu ale cíleně nebuduje, proto výpony z plánu zůstávají hlavní. Nahradí nejvýš 3 tréninky týdně.",
@@ -285,6 +335,7 @@ window.MILESTONES = [
   { id: "ten", name: "Desítka", desc: "10 tréninků", test: s => s.total >= 10 },
   { id: "heavy", name: "Pod zátěží", desc: "Výpon na jedné noze se zátěží 10 kg", test: s => s.maxKg >= 10 },
   { id: "streak3", name: "Tři v řadě", desc: "3 týdny v řadě splněný cíl", test: s => s.bestStreak >= 3 },
+  { id: "rehab7", name: "Poctivá rehabka", desc: "7 dní v řadě všechny cviky od lékaře", test: s => s.rehabStreak >= 7 },
   { id: "twenty", name: "Dvacítka", desc: "20 tréninků", test: s => s.total >= 20 },
   { id: "bike100", name: "Sto kilometrů", desc: "100 km na kole do práce", test: s => s.bikeKm >= 100 },
   { id: "plan", name: "Celý plán", desc: "10 splněných týdnů", test: s => s.weeksHit >= 10 }

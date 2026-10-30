@@ -32,7 +32,7 @@
 
   const store = window.createStore();
   const BASE = `pairs/${pair}`;
-  const EMPTY = { profile: null, sessions: null, messages: null, reactions: null, plan: null, everyday: null };
+  const EMPTY = { profile: null, sessions: null, messages: null, reactions: null, plan: null, everyday: null, rehab: null };
   const state = {
     role: LS.get("role", null),            // "patient" | "partner"
     tab: params.get("tab") || LS.get("tab", "home"),
@@ -62,7 +62,7 @@
   }
   function planForDb() {
     const p = window.PLAN;
-    return { version: p.version, name: p.name, weeklyGoal: p.weeklyGoal, jokers: p.jokers || null, source: p.source || null, phases: p.phases, rules: p.rules, exercises: p.exercises, weeks: p.weeks, cheers: p.cheers, uploadedAt: Date.now() };
+    return { version: p.version, name: p.name, weeklyGoal: p.weeklyGoal, jokers: p.jokers || null, source: p.source || null, rehab: p.rehab || null, phases: p.phases, rules: p.rules, exercises: p.exercises, weeks: p.weeks, cheers: p.cheers, uploadedAt: Date.now() };
   }
   // Poslední zapsaná zátěž u cviku, pro nápovědu a progresi.
   function lastKg(id) { const s = sessions().find(s => Number(s.exercises?.[id]?.kg) > 0); return s ? Number(s.exercises[id].kg) : null; }
@@ -139,8 +139,10 @@
     const week = P.weeks.find(w => w.week === planWeek) || P.weeks[P.weeks.length - 1];
     const phase = P.phases.find(ph => ph.id === week.phase) || P.phases[0];
 
+    const rehabActive = rehabItems().length > 0;
     return { goal, thisWeekCount: byWeek[thisWeek] || 0, weeks, streak, bestStreak, weeksHit, calmRun, total: ss.filter(s => !isJoker(s)).length + countedJoker.size, last, sinceLast, weekPost, trainedToday,
       jokerByWeek, strengthThisWeek, countedJoker, bikeRides: bikeRides.length, bikeKm, maxKg,
+      rehabActive, rehabDoneToday: rehabActive && rehabDone(today), rehabStreak: rehabActive ? rehabStreak() : 0,
       planWeek, week, phase, planAuto: !override, planDone: weeksHit >= P.weeks.length,
       painPoints: ss.slice(0, 12).reverse().map(s => ({ pain: Number(s.pain) || 0, label: fmtShort(s.date) })) };
   }
@@ -177,11 +179,12 @@
     const st = stats(), p = profile(), P = plan();
     let title, lede;
     if (isPartner()) {
-      title = st.thisWeekCount >= st.goal ? `${her()} má tento týden splněno.` : st.trainedToday ? `${her()} má dnes odcvičeno.` : `${her()} má tento týden ${st.thisWeekCount} z ${st.goal}.`;
+      title = st.thisWeekCount >= st.goal ? `${her()} má tento týden splněno.` : st.trainedToday ? `${her()} má dnes odcvičeno.` : st.rehabDoneToday ? `${her()} má dnes rehabku hotovou.` : `${her()} má tento týden ${st.thisWeekCount} z ${st.goal}.`;
       lede = st.trainedToday ? "Napiš pár slov, ať ví, že to vidíš. Reakce na trénink najdeš v Historii." : st.sinceLast === null ? "Zatím žádný trénink. Pošli první povzbuzení." : st.sinceLast >= 3 ? `Poslední trénink před ${st.sinceLast} dny. Dobrý moment na popíchnutí.` : "Drží tempo. Krátká zpráva udělá radost.";
     } else {
-      title = st.trainedToday ? "Dnes hotovo. Odpočívej." : st.thisWeekCount >= st.goal ? "Týden splněný. Víc není potřeba." : st.thisWeekCount === 0 ? "Nový týden, čistý štít." : `Ještě ${st.goal - st.thisWeekCount}× a týden je tvůj.`;
-      lede = st.trainedToday ? "Šlacha se přestavuje v klidu. Zítra ráno zapiš, jak se probudila." : `${st.week.title}: ${st.week.focus}`;
+      const rehabOpen = st.rehabActive && !st.rehabDoneToday;
+      title = st.trainedToday ? (rehabOpen ? "Trénink hotový, zbývá rehabka." : "Dnes hotovo. Odpočívej.") : st.thisWeekCount >= st.goal ? "Týden splněný. Víc není potřeba." : st.thisWeekCount === 0 ? "Nový týden, čistý štít." : `Ještě ${st.goal - st.thisWeekCount}× a týden je tvůj.`;
+      lede = st.trainedToday ? (rehabOpen ? "Tři cviky od lékaře a den je kompletní. Odškrtni je níž." : "Šlacha se přestavuje v klidu. Zítra ráno zapiš, jak se probudila.") : rehabOpen && st.thisWeekCount >= st.goal ? "Rehabka ale platí každý den, i dnes." : `${st.week.title}: ${st.week.focus}`;
     }
     const name = isPartner() ? "" : (p.patientName ? `Ahoj ${esc(p.patientName)}` : "Ahoj");
     const lastMsg = messages().filter(m => m.from === "partner").slice(-1)[0];
@@ -212,9 +215,12 @@
         <div class="stat"><div class="v num">${st.streak}</div><div class="l">${plural(st.streak, "týden", "týdny", "týdnů")} v řadě se splněným cílem</div></div>
         <div class="stat"><div class="v num">${st.sinceLast === null ? "–" : st.sinceLast === 0 ? "dnes" : st.sinceLast}</div><div class="l">${st.sinceLast === null ? "žádný trénink" : st.sinceLast === 0 ? "poslední trénink" : (st.sinceLast === 1 ? "den od tréninku" : "dní od tréninku")}</div></div>
         <div class="stat"><div class="v num">${st.weekPost ?? "–"}</div><div class="l">${st.weekPost ? "týden rehabilitace" : "začátek rehabilitace v nastavení"}</div></div>
+        ${st.rehabActive ? `<div class="stat"><div class="v num">${st.rehabStreak}</div><div class="l">${plural(st.rehabStreak, "den", "dny", "dní")} v řadě rehabka${st.rehabDoneToday ? "" : st.rehabStreak ? ", dnes ještě ne" : ""}</div></div>` : ""}
         ${st.bikeRides ? `<div class="stat"><div class="v num">${Math.round(st.bikeKm)} km</div><div class="l">na kole do práce, ${st.bikeRides} ${plural(st.bikeRides, "jízda", "jízdy", "jízd")}</div></div>` : ""}
       </div>
     </section>
+
+    ${renderRehab(st)}
 
     <section class="section">
       <div class="phase">
@@ -279,6 +285,45 @@
       ${todo.length ? `<div class="list">${todo.map(i => `<label class="card-soft card small check everyday"><input type="checkbox" data-everyday="${esc(i.id)}"${ro ? " disabled" : ""}><span><strong>${esc(i.name)}.</strong>${i.text ? ` <span class="muted">${esc(i.text)}</span>` : ""}</span></label>`).join("")}</div>` : `<div class="card-soft card small everyday-all">Všechno hotovo 👏</div>`}
       ${doneItems.length ? `<p class="ex-lab" style="margin-top:12px">Hotovo</p><div class="everyday-done">${doneItems.map(i => `<label class="check everyday-mini"><input type="checkbox" data-everyday="${esc(i.id)}" checked${ro ? " disabled" : ""}><span>${esc(i.name)}</span></label>`).join("")}</div>` : ""}
       <p class="small muted" style="margin-top:6px">${ro ? `Odškrtává ${esc(her())}. Do tréninků se nepočítá.` : day === today ? "Odškrtni, co dnes zvládneš. Do tréninků se nepočítá." : `Doplňuješ ${esc(fmtLong(day))}. Do tréninků se nepočítá.`}</p></section>`;
+  }
+
+  /* ---------- rehabka: cviky od lékaře, každý den ---------- */
+  // Rehabka z databáze má přednost, když má položky; jinak vestavěná z plánu v kódu.
+  function rehab() { const r = plan().rehab; return r && Array.isArray(r.items) && r.items.length ? r : window.PLAN.rehab || null; }
+  const rehabEx = id => plan().exercises[id] || window.PLAN.exercises[id] || { name: id, steps: [] };
+  function rehabItems() { const r = rehab(); return r ? r.items.filter(it => it && it.ex) : []; }
+  const rehabTarget = it => `${it.sets} × ${it.time || it.reps}`;
+  const rehabLog = () => state.data.rehab || {};
+  // Den je splněný, když jsou odškrtnuté všechny cviky.
+  function rehabDone(date) { const d = rehabLog()[date] || {}, items = rehabItems(); return items.length > 0 && items.every(it => d[it.ex]); }
+  const rehabDays = () => Object.entries(rehabLog()).map(([date, v]) => ({ date, ids: Object.keys(v || {}).filter(k => v[k]) })).filter(d => d.ids.length);
+  // Dny v řadě se všemi cviky. Dnešek se počítá, jen když už je hotový; jinak se začíná od včerejška.
+  function rehabStreak() {
+    let n = 0;
+    for (let i = rehabDone(todayISO()) ? 0 : 1; i < 400; i++) { if (rehabDone(daysAgo(i))) n++; else break; }
+    return n;
+  }
+  function nextVisit() { const t = todayISO(); return ((rehab() || {}).visits || []).filter(v => v && v.date >= t).sort((a, b) => a.date < b.date ? -1 : 1)[0] || null; }
+
+  // Zápis: rehab/<datum>/<cvik> = true. Den se přepíná stejně jako u „Během dne“ (state.everydayDate).
+  function renderRehab(st) {
+    const R = rehab(), items = rehabItems();
+    if (!R || !items.length) return "";
+    const today = todayISO(), day = everydayDate(), done = rehabLog()[day] || {};
+    const doneN = items.filter(it => done[it.ex]).length, allDone = doneN === items.length;
+    const ro = isPartner(), visit = nextVisit(), cal = safeLink(R.calendar), C = R.clinic || {};
+    const streak = st.rehabStreak;
+    return `<section class="section" id="rehab">
+      <div class="section-head"><h2>${esc(R.name || "Rehabka")} · každý den</h2><span class="small muted">${esc(day === today ? "dnes" : fmtLong(day))} ${doneN} z ${items.length}${streak ? ` · ${streak} ${plural(streak, "den", "dny", "dní")} v řadě` : ""}</span></div>
+      ${ro ? "" : `<div class="seg" style="margin-bottom:8px">${[["Dnes", 0], ["Včera", 1], ["Předevčírem", 2]].map(([l, n]) => `<button type="button" data-ev-day="${n}" class="${day === daysAgo(n) ? "on" : ""}">${l}</button>`).join("")}</div>`}
+      ${allDone ? `<div class="card-soft card small everyday-all" style="margin-bottom:10px">Rehabka ${day === today ? "na dnešek" : esc(fmtLong(day))} hotová 👏</div>` : ""}
+      <div class="list">${items.map(it => { const e = rehabEx(it.ex), on = !!done[it.ex]; return `<div class="card ex rehab ${on ? "done" : ""}">
+        <label class="check everyday"><input type="checkbox" data-rehab="${esc(it.ex)}"${on ? " checked" : ""}${ro ? " disabled" : ""}><span><strong>${esc(e.name)}</strong><span class="ex-target">${esc(rehabTarget(it))}${it.note ? ` · ${esc(it.note)}` : ""}${e.alias ? ` · ${esc(e.alias)}` : ""}</span></span></label>
+        <details class="rehab-more"><summary>Popis</summary><div class="ex-body small">${renderExBody(e)}</div></details>
+      </div>`; }).join("")}</div>
+      ${visit ? `<div class="card-soft card small" style="margin-top:10px"><strong>${visit.date === today ? "Dnes" : esc(fmtLong(visit.date))}${visit.time ? ` ${esc(visit.time)}` : ""}: ${esc(visit.what || "rehabka")}.</strong> <span class="muted">${esc([C.name, C.address].filter(Boolean).join(", "))}${C.phone ? `, ${esc(C.phone)}` : ""}.</span>${cal ? ` <a href="${esc(cal)}" target="_blank" rel="noopener">Kalendář ↗</a>` : ""}</div>` : cal ? `<p class="small" style="margin-top:10px"><a href="${esc(cal)}" target="_blank" rel="noopener">Kalendář rehabky ↗</a></p>` : ""}
+      <p class="small muted" style="margin-top:6px">${esc(R.note || "")}${ro ? ` Odškrtává ${esc(her())}.` : day === today ? "" : ` Doplňuješ ${esc(fmtLong(day))}.`} Do tréninků se nepočítá.</p>
+    </section>`;
   }
 
   function renderMilestones(st) {
@@ -451,13 +496,16 @@
 
   /* ---------- historie ---------- */
   function renderHistory() {
-    const ss = sessions(), days = everydayDays();
-    if (!ss.length && !days.length) return `<section class="section"><h1>Historie</h1><div class="empty">Zatím žádný trénink. ${isPartner() ? "Až ho zapíše, uvidíš ho tady a můžeš zareagovat." : "První zápis je v záložce Trénink."}</div></section>`;
+    const ss = sessions(), days = everydayDays(), rdays = rehabDays(), rn = rehabItems().length;
+    if (!ss.length && !days.length && !rdays.length) return `<section class="section"><h1>Historie</h1><div class="empty">Zatím žádný trénink. ${isPartner() ? "Až ho zapíše, uvidíš ho tady a můžeš zareagovat." : "První zápis je v záložce Trénink."}</div></section>`;
     const reacts = state.data.reactions || {};
     const st = stats();
     const moods = ["skvěle", "dobře", "ok", "těžké", "bolelo"], swell = ["ráno bez ztuhlosti", "ráno mírně ztuhlá", "ráno výrazně ztuhlá"];
     return `<section class="section"><div class="section-head"><h1>Historie</h1><span class="muted small num">${ss.length} ${plural(ss.length, "trénink", "tréninky", "tréninků")}</span></div>
-    <div class="list">${[...ss.map(s => ({ date: s.date, s })), ...days.map(d => ({ date: d.date, d }))].sort((a, b) => a.date < b.date ? 1 : a.date > b.date ? -1 : a.d ? -1 : b.d ? 1 : 0).map(({ s, d }) => {
+    <div class="list">${[...ss.map(s => ({ date: s.date, s })), ...days.map(d => ({ date: d.date, d })), ...rdays.map(r => ({ date: r.date, r }))].sort((a, b) => a.date < b.date ? 1 : a.date > b.date ? -1 : a.r ? -1 : b.r ? 1 : a.d ? -1 : b.d ? 1 : 0).map(({ s, d, r }) => {
+      if (r) return `<article class="card card-soft sess"><div class="sess-head"><span class="d">${esc(fmtLong(r.date))} <span class="muted small">· rehabka</span></span><span class="chip ${rn && r.ids.length >= rn ? "ok" : ""}">${rn ? `${r.ids.length} z ${rn}` : `${r.ids.length}×`}</span></div>
+        <div class="chips">${r.ids.slice().sort((a, b) => rehabItems().findIndex(i => i.ex === a) - rehabItems().findIndex(i => i.ex === b)).map(id => `<span class="chip">${esc(rehabEx(id).name)}</span>`).join("")}</div>
+        ${!isPartner() ? `<div class="reacts"><button type="button" class="linkbtn" data-ev-edit="${esc(r.date)}" data-target="rehab" style="margin-left:auto">Upravit</button></div>` : ""}</article>`;
       if (d) return `<article class="card card-soft sess"><div class="sess-head"><span class="d">${esc(fmtLong(d.date))} <span class="muted small">· během dne</span></span><span class="chip ok">${d.ids.length}×</span></div>
         <div class="chips">${d.ids.map(id => `<span class="chip">${esc(everydayName(id, st.phase.id))}</span>`).join("")}</div>
         ${!isPartner() ? `<div class="reacts"><button type="button" class="linkbtn" data-ev-edit="${esc(d.date)}" style="margin-left:auto">Upravit</button></div>` : ""}</article>`;
@@ -639,7 +687,12 @@
     view.querySelectorAll("[data-everyday]").forEach(c => c.onchange = () => store.set(`${BASE}/everyday/${everydayDate()}/${c.dataset.everyday}`, c.checked ? true : null));
     view.querySelectorAll("[data-ev-day]").forEach(b => b.onclick = () => { state.everydayDate = daysAgo(Number(b.dataset.evDay)); render(); });
     const evd = $("#ev-date"); if (evd) evd.onchange = () => { state.everydayDate = evd.value || todayISO(); render(); };
-    view.querySelectorAll("[data-ev-edit]").forEach(b => b.onclick = () => { state.everydayDate = b.dataset.evEdit; go("home"); const el = $("#everyday"); if (el) el.scrollIntoView(); });
+    view.querySelectorAll("[data-ev-edit]").forEach(b => b.onclick = () => { state.everydayDate = b.dataset.evEdit; go("home"); const el = $("#" + (b.dataset.target || "everyday")); if (el) el.scrollIntoView(); });
+    view.querySelectorAll("[data-rehab]").forEach(c => c.onchange = () => {
+      const all = [...view.querySelectorAll("[data-rehab]")].every(x => x.checked), day = everydayDate();
+      store.set(`${BASE}/rehab/${day}/${c.dataset.rehab}`, c.checked ? true : null);
+      if (c.checked && all) { const n = rehabStreak(); toast(day === todayISO() ? `Rehabka hotová${n > 1 ? `, ${n} ${plural(n, "den", "dny", "dní")} v řadě` : ""} 👏` : `Rehabka za ${fmtLong(day)} doplněna`); }
+    });
     const te = $("#toggle-ex"); if (te) te.onclick = () => { state.showAllEx = !state.showAllEx; render(); };
     view.querySelectorAll("[data-set]").forEach(b => b.onclick = () => {
       const d = draft(), id = b.dataset.set, n = Number(b.dataset.n), box = b.closest(".sets").dataset;
