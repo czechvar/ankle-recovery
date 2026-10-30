@@ -282,3 +282,13 @@ code.inline { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; backg
 .rehab-more summary::-webkit-details-marker { display: none; }
 .rehab-more[open] summary { margin-bottom: 2px; }
 .rehab-more .ex-body { display: grid; margin-top: 6px; }
+.rehab-form { display: grid; gap: 10px; }
+.rehab-form textarea { min-height: 90px; }
+.rehab-dose { display: grid; grid-template-columns: 1fr 2fr; gap: 10px; }
+.rehab-actions { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.rehab-item summary { cursor: pointer; list-style: none; display: flex; justify-content: space-between; gap: 10px; }
+.rehab-item summary::-webkit-details-marker { display: none; }
+.rehab-item[open] summary { margin-bottom: 10px; }
+.rehab-item summary .muted { white-space: nowrap; }
+.rehab-off { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+#rehab > .linkbtn { margin-top: 6px; }

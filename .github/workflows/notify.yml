@@ -3,6 +3,7 @@ name: Upozornění
 # Každých 15 minut projde databázi a pošle upozornění (scripts/notify.mjs).
 # GitHub plánované běhy občas zpozdí o pár minut. Potřebné secrets:
 # FIREBASE_SERVICE_ACCOUNT a VAPID_PRIVATE_KEY (viz docs/NOTIFICATIONS.md).
+# Volitelně REHAB_ICAL_URL: tajná iCal adresa kalendáře rehabky (jen čtení termínů).
 on:
   schedule:
     - cron: "*/15 * * * *"
@@ -29,3 +30,4 @@ jobs:
         env:
           FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
           VAPID_PRIVATE_KEY: ${{ secrets.VAPID_PRIVATE_KEY }}
+          REHAB_ICAL_URL: ${{ secrets.REHAB_ICAL_URL }}

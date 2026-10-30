@@ -43,6 +43,16 @@ Po pozdější změně klíčů je potřeba upozornění na telefonech zapnout z
 1. **Actions → Upozornění → Run workflow**. Běh má skončit zeleně a v logu je „Odesláno N…“.
 2. Na telefonu zapni upozornění, nech parťáka poslat zprávu a spusť workflow znovu ručně.
 
+### 4. Kalendář rehabky (volitelně)
+
+Akce při každém běhu načte Google kalendář rehabky, termíny zapíše do `pairs/<kód>/calendar` a appka i připomínka den předem je berou odtud. Do kalendáře se nic nezapisuje.
+
+1. Google Kalendář na počítači → ⚙️ **Nastavení** → vlevo kalendář rehabky → **Integrace kalendáře** → **Tajná adresa ve formátu iCal** (končí `.ics`).
+2. Ulož ji jako secret `REHAB_ICAL_URL`. Je to heslo ke kalendáři, nikam jinam ji nevkládej.
+3. **Run workflow** a v logu hledej „Kalendář rehabky: N termínů“.
+
+Bez secretu akce zkusí veřejnou adresu kalendáře z odkazu v `js/plan.js`; ta funguje jen u veřejného kalendáře. Dokud se kalendář nenačte, appka ukazuje termíny opsané v `js/plan.js`.
+
 ## iPhone
 
 Upozornění na iPhonu (iOS 16.4 a novější) fungují jen z appky přidané na plochu: Safari → **Sdílet** → **Přidat na plochu**, otevřít z plochy a teprve tam zapnout upozornění. Android a počítač fungují přímo v prohlížeči.
