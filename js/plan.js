@@ -20,18 +20,20 @@ window.PLAN = {
     { id: "bike", ex: "bike", short: "Kolo do práce", icon: "🚲", perWeek: 1, km: true, minKm: 10, defaultKm: 20, placeholder: "Např. protivítr, šlacha po jízdě v klidu…" },
     { id: "kb5", ex: "kb5", short: "KB5", icon: "🏋️", perWeek: 3, link: true, placeholder: "Např. swingy 16 kg, protažení, šlacha v klidu…" }
   ],
-  // Rehabka: cviky od lékaře (IC klinika, od 30. 10. 2026). Dělají se každý den, odškrtávají se
-  // zvlášť na Přehledu (rehab/<datum>/<cvik>) a do tréninků z plánu se nepočítají.
+  // Rehabka: povinné cviky od lékaře (IC klinika, od 30. 10. 2026). Jsou součástí každého tréninku
+  // nahoře v sestavě, se štítkem Povinné. Bere se vždy tahle verze z kódu, ne plán z databáze.
+  // Nový cvik z rehabky: popis do `exercises` (id rhb…) a sem na konec `items` s `from` = den,
+  // kdy ho lékař ukázal. Cviky se sčítají; od `from` je povinný, dřívější dny se nemění.
   rehab: {
     since: "2026-10-30",
     name: "Rehabka",
-    note: "Cviky od lékaře z rehabilitace. Jednou denně, všechny. Klidně rozděl během dne.",
+    note: "Cviky od lékaře z rehabilitace. Každý den, všechny.",
     clinic: { name: "IC klinika, Rehabilitace & Fitness", address: "Nové sady 676/4, Brno", phone: "+420 530 347 169", hours: "Po–Čt 7–15, Pá 7–12" },
     calendar: "https://calendar.google.com/calendar/u/0?cid=Mzg5NGViMDhlMDNhMDJjZjkwZmY0OGJjYjkwNmFhYjI1ODMyNWQzYzhkMTUyYzQ5MTRlYjcxNDRkOGMwMjNhZEBncm91cC5jYWxlbmRhci5nb29nbGUuY29t",
     items: [
-      { ex: "rhbhold", sets: "3–4", time: "40–45 s" },
-      { ex: "rhbband", sets: "3–4", reps: "15–20" },
-      { ex: "rhbtap", sets: "3–4", reps: "15–20" }
+      { ex: "rhbhold", sets: "3–4", time: "40–45 s", from: "2026-10-30" },
+      { ex: "rhbband", sets: "3–4", reps: "15–20", from: "2026-10-30" },
+      { ex: "rhbtap", sets: "3–4", reps: "15–20", from: "2026-10-30" }
     ],
     // Termíny na klinice opsané z kalendáře Rehabka IC. Jen záloha: jakmile akce Upozornění
     // načte kalendář (pairs/<kód>/calendar), appka i připomínky berou termíny odtud.
