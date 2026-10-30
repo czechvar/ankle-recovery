@@ -273,22 +273,5 @@ code.inline { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; backg
 .check.everyday-mini { font-size: .85rem; color: var(--fg-muted); text-decoration: line-through; cursor: pointer; }
 .seg.days button { flex: 1 1 0; padding: 8px 0; }
 
-/* rehabka: cviky od lékaře, odškrtávání na Přehledu */
-.ex.rehab .check { cursor: pointer; }
-.ex.rehab .check > span { display: grid; gap: 2px; }
-.ex.rehab.done .check > span strong { color: var(--good); }
-.rehab-more { margin-top: 8px; }
-.rehab-more summary { cursor: pointer; list-style: none; width: max-content; color: var(--deep); font-weight: 600; font-size: .85rem; }
-.rehab-more summary::-webkit-details-marker { display: none; }
-.rehab-more[open] summary { margin-bottom: 2px; }
-.rehab-more .ex-body { display: grid; margin-top: 6px; }
-.rehab-form { display: grid; gap: 10px; }
-.rehab-form textarea { min-height: 90px; }
-.rehab-dose { display: grid; grid-template-columns: 1fr 2fr; gap: 10px; }
-.rehab-actions { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
-.rehab-item summary { cursor: pointer; list-style: none; display: flex; justify-content: space-between; gap: 10px; }
-.rehab-item summary::-webkit-details-marker { display: none; }
-.rehab-item[open] summary { margin-bottom: 10px; }
-.rehab-item summary .muted { white-space: nowrap; }
-.rehab-off { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
-#rehab > .linkbtn { margin-top: 6px; }
+/* rehabka: povinné cviky v tréninku */
+.chip.must { vertical-align: middle; margin-left: 4px; background: color-mix(in srgb, var(--accent) 15%, var(--surface-2)); color: var(--accent); font-weight: 700; font-size: .7rem; }

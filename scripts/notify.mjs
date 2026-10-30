@@ -53,12 +53,13 @@ const clip = (s, n) => { s = String(s || "").replace(/\s+/g, " ").trim(); return
 
 /* ---------- rehabka ---------- */
 const R = PLAN.rehab || {};
-// Vestavěné cviky + přidané v appce (rehabEx/<id>), bez vyřazených a bez těch přidaných až po `date`.
-function rehabItemsOn(pair, date) {
-  const db = pair.rehabEx || {}, base = (Array.isArray(R.items) ? R.items : []).filter(i => i && i.ex);
-  const list = base.map(i => ({ ...i, ...(db[i.ex] || {}), ex: i.ex }));
-  Object.entries(db).forEach(([id, v]) => { if (v && v.name && !base.some(b => b.ex === id)) list.push({ ...v, ex: id }); });
-  return list.filter(i => !i.off && (!i.added || i.added <= date));
+// Povinné cviky platné k datu (každý od svého `from`).
+const rehabItemsOn = date => (Array.isArray(R.items) ? R.items : []).filter(i => i && i.ex && (i.from || R.since || "") <= date);
+// Hotové cviky dne: z tréninků toho dne (a ze starších odškrtnutí rehab/<datum>).
+function doneIdsOn(pair, date) {
+  const ids = new Set(Object.keys((pair.rehab || {})[date] || {}).filter(k => pair.rehab[date][k]));
+  Object.values(pair.sessions || {}).filter(s => s && s.date === date && !jokerById(s.kind)).forEach(s => Object.entries(s.exercises || {}).forEach(([id, v]) => { if ((v && v.sets) > 0) ids.add(id); }));
+  return ids;
 }
 
 // Veřejná iCal adresa z odkazu na Google kalendář (…?cid=<base64 id>).
@@ -144,16 +145,16 @@ export function planPair(code, pair, now) {
       to("patient", "reminders", { title: `${APP}: čas na trénink`, body: `Tento týden ${count} z ${goal}. ${left === 1 ? "Ještě jeden a týden je tvůj." : `Ještě ${left} ${plural(left, "trénink", "tréninky", "tréninků")} do cíle.`}`, tag: `rem-${today}`, url: "./?tab=log" });
     }
   }
-  // Rehabka: každý den v hodinu připomínky, když ještě nejsou odškrtnuté všechny cviky od lékaře.
+  // Rehabka: každý den v hodinu připomínky, když v dnešních trénincích ještě nejsou všechny povinné cviky.
   // Ve stejnou chvíli připomene i zítřejší návštěvu kliniky.
-  const rItems = rehabItemsOn(pair, today);
+  const rItems = rehabItemsOn(today);
   const visits = pair.calendar && Array.isArray(pair.calendar.events) ? pair.calendar.events : R.visits || [];
   let rehabReminded = state.rehabReminded || null;
   if (rItems.length && (!R.since || today >= R.since) && rehabReminded !== today && hour >= remHour) {
     rehabReminded = today;
-    const done = (pair.rehab || {})[today] || {};
-    const left = rItems.filter(i => !done[i.ex]).length;
-    if (left) to("patient", "reminders", { title: `${APP}: rehabka`, body: left === rItems.length ? `Dnes ještě žádný cvik od lékaře. ${rItems.length} ${plural(rItems.length, "cvik", "cviky", "cviků")} a den je kompletní.` : `Ještě ${left} ${plural(left, "cvik", "cviky", "cviků")} od lékaře a dnešek je kompletní.`, tag: `rhb-${today}`, url: "./" });
+    const done = doneIdsOn(pair, today);
+    const left = rItems.filter(i => !done.has(i.ex)).length;
+    if (left) to("patient", "reminders", { title: `${APP}: rehabka`, body: left === rItems.length ? `Dnes ještě žádný povinný cvik z rehabky. ${rItems.length} ${plural(rItems.length, "cvik", "cviky", "cviků")} a den je kompletní.` : `Ještě ${left} ${plural(left, "povinný cvik", "povinné cviky", "povinných cviků")} z rehabky a dnešek je kompletní.`, tag: `rhb-${today}`, url: "./?tab=log" });
     const tomorrow = toISO(fromISO(today) + DAY);
     visits.filter(v => v && v.date === tomorrow).forEach(v => to("patient", "reminders", { title: `${APP}: zítra ${v.what || "rehabka"}`, body: clip(`${v.time ? `V ${v.time}` : "Zítra"}, ${v.where || [R.clinic?.name, R.clinic?.address].filter(Boolean).join(", ") || "rehabka"}.`, 140), tag: `visit-${v.date}-${v.time || ""}`, url: "./" }));
   }
