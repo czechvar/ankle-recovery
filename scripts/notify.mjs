@@ -7,13 +7,16 @@
 //   - cvičícímu: zprávu, reakci, připomínku v tréninkové dny (Europe/Prague),
 //     denně připomínku rehabky (cviky od lékaře) a den předem návštěvu kliniky
 // Co už bylo odesláno, si pamatuje v pairs/<kód>/push/state.
+// Navíc načte Google kalendář rehabky (iCal, jen čtení) a termíny zapíše do pairs/<kód>/calendar.
 //
 // Proměnné prostředí:
 //   FIREBASE_SERVICE_ACCOUNT  JSON klíč servisního účtu (Firebase → Project settings → Service accounts)
 //   VAPID_PRIVATE_KEY         soukromý VAPID klíč (veřejný je v js/push.js)
 //   FIREBASE_DATABASE_URL     volitelně; jinak databaseURL z js/firebase-config.js
+//   REHAB_ICAL_URL            volitelně; tajná adresa kalendáře ve formátu iCal. Bez ní se zkusí
+//                             veřejná adresa kalendáře z plánu (funguje jen u veřejného kalendáře).
 //
-// Test bez sítě:  node scripts/notify.mjs --file data.json [--now 2026-10-13T18:05:00+02:00]
+// Test bez sítě:  node scripts/notify.mjs --file data.json [--now 2026-10-13T18:05:00+02:00] [--ics kalendar.ics]
 //   data.json je obsah uzlu pairs ({ "<kód>": {...} }); jen vypíše, co by se poslalo.
 
 import { readFileSync } from "node:fs";
@@ -47,6 +50,50 @@ const weekStart = iso => toISO(fromISO(iso) - weekdayIdx(iso) * DAY);
 const fmtDate = iso => { const d = new Date(fromISO(iso)); return `${d.getUTCDate()}.${d.getUTCMonth() + 1}.`; };
 const plural = (n, a, b, c) => n === 1 ? a : n >= 2 && n <= 4 ? b : c;
 const clip = (s, n) => { s = String(s || "").replace(/\s+/g, " ").trim(); return s.length > n ? s.slice(0, n - 1) + "…" : s; };
+
+/* ---------- rehabka ---------- */
+const R = PLAN.rehab || {};
+// Vestavěné cviky + přidané v appce (rehabEx/<id>), bez vyřazených a bez těch přidaných až po `date`.
+function rehabItemsOn(pair, date) {
+  const db = pair.rehabEx || {}, base = (Array.isArray(R.items) ? R.items : []).filter(i => i && i.ex);
+  const list = base.map(i => ({ ...i, ...(db[i.ex] || {}), ex: i.ex }));
+  Object.entries(db).forEach(([id, v]) => { if (v && v.name && !base.some(b => b.ex === id)) list.push({ ...v, ex: id }); });
+  return list.filter(i => !i.off && (!i.added || i.added <= date));
+}
+
+// Veřejná iCal adresa z odkazu na Google kalendář (…?cid=<base64 id>).
+function publicIcal(link) {
+  try {
+    const cid = new URL(link).searchParams.get("cid"); if (!cid) return "";
+    const id = Buffer.from(cid, "base64").toString("utf8");
+    return /^[\w.-]+@[\w.-]+$/.test(id) ? `https://calendar.google.com/calendar/ical/${encodeURIComponent(id)}/public/basic.ics` : "";
+  } catch (e) { return ""; }
+}
+
+// Události z iCal: { date, time, what, where } v pražském čase, od 60 dní zpět po rok dopředu.
+// Opakované události (RRULE) se berou jen jednou, první výskyt; termíny na klinice bývají samostatné.
+export function parseIcs(text, now) {
+  const unesc = s => s.replace(/\\n/gi, " ").replace(/\\([,;\\])/g, "$1").trim();
+  const events = []; let ev = null;
+  for (const l of String(text).replace(/\r?\n[ \t]/g, "").split(/\r?\n/)) {
+    if (l === "BEGIN:VEVENT") ev = {};
+    else if (l === "END:VEVENT") { if (ev) events.push(ev); ev = null; }
+    else if (ev) { const i = l.indexOf(":"); if (i > 0) ev[l.slice(0, i).split(";")[0].toUpperCase()] = l.slice(i + 1); }
+  }
+  const from = dateIn(now - 60 * DAY), to = dateIn(now + 365 * DAY);
+  return events.filter(e => e.DTSTART && (e.STATUS || "").toUpperCase() !== "CANCELLED").map(e => {
+    const m = e.DTSTART.match(/^(\d{4})(\d{2})(\d{2})(?:T(\d{2})(\d{2})\d{2}(Z)?)?/); if (!m) return null;
+    let date = `${m[1]}-${m[2]}-${m[3]}`, time = m[4] ? `${Number(m[4])}:${m[5]}` : "";
+    if (m[6]) {   // UTC → Praha; bez Z je to místní čas kalendáře (TZID=Europe/Prague)
+      const t = Date.UTC(+m[1], +m[2] - 1, +m[3], +m[4], +m[5]);
+      date = dateIn(t);
+      const [h, mi] = new Intl.DateTimeFormat("en-GB", { timeZone: TZ, hour: "2-digit", minute: "2-digit", hourCycle: "h23" }).format(new Date(t)).split(":");
+      time = `${Number(h)}:${mi}`;
+    }
+    return { date, time, what: clip(unesc(e.SUMMARY || ""), 80) || "Rehabka", where: clip(unesc(e.LOCATION || ""), 120) };
+  }).filter(e => e && e.date >= from && e.date <= to)
+    .sort((a, b) => (a.date + a.time.padStart(5, "0")) < (b.date + b.time.padStart(5, "0")) ? -1 : 1).slice(0, 200);
+}
 
 /* ---------- co poslat jedné dvojici ---------- */
 export function planPair(code, pair, now) {
@@ -99,7 +146,8 @@ export function planPair(code, pair, now) {
   }
   // Rehabka: každý den v hodinu připomínky, když ještě nejsou odškrtnuté všechny cviky od lékaře.
   // Ve stejnou chvíli připomene i zítřejší návštěvu kliniky.
-  const R = PLAN.rehab || {}, rItems = Array.isArray(R.items) ? R.items.filter(i => i && i.ex) : [];
+  const rItems = rehabItemsOn(pair, today);
+  const visits = pair.calendar && Array.isArray(pair.calendar.events) ? pair.calendar.events : R.visits || [];
   let rehabReminded = state.rehabReminded || null;
   if (rItems.length && (!R.since || today >= R.since) && rehabReminded !== today && hour >= remHour) {
     rehabReminded = today;
@@ -107,7 +155,7 @@ export function planPair(code, pair, now) {
     const left = rItems.filter(i => !done[i.ex]).length;
     if (left) to("patient", "reminders", { title: `${APP}: rehabka`, body: left === rItems.length ? `Dnes ještě žádný cvik od lékaře. ${rItems.length} ${plural(rItems.length, "cvik", "cviky", "cviků")} a den je kompletní.` : `Ještě ${left} ${plural(left, "cvik", "cviky", "cviků")} od lékaře a dnešek je kompletní.`, tag: `rhb-${today}`, url: "./" });
     const tomorrow = toISO(fromISO(today) + DAY);
-    (R.visits || []).filter(v => v && v.date === tomorrow).forEach(v => to("patient", "reminders", { title: `${APP}: zítra ${v.what || "rehabka"}`, body: clip(`${v.time ? `V ${v.time}` : "Zítra"}${R.clinic?.name ? `, ${R.clinic.name}` : ""}${R.clinic?.address ? `, ${R.clinic.address}` : ""}.`, 140), tag: `visit-${v.date}`, url: "./" }));
+    visits.filter(v => v && v.date === tomorrow).forEach(v => to("patient", "reminders", { title: `${APP}: zítra ${v.what || "rehabka"}`, body: clip(`${v.time ? `V ${v.time}` : "Zítra"}, ${v.where || [R.clinic?.name, R.clinic?.address].filter(Boolean).join(", ") || "rehabka"}.`, 140), tag: `visit-${v.date}-${v.time || ""}`, url: "./" }));
   }
   return { out, state: { lastCheck: now, reminded, rehabReminded } };
 }
@@ -129,7 +177,10 @@ async function main() {
   const now = args.now ? Date.parse(args.now) : Date.now();
   if (args.file) {
     const pairs = JSON.parse(readFileSync(resolve(args.file), "utf8"));
+    const events = args.ics ? parseIcs(readFileSync(resolve(args.ics), "utf8"), now) : null;
+    if (events) events.forEach(e => console.log(`kalendář: ${e.date} ${e.time} ${e.what}${e.where ? ` (${e.where})` : ""}`));
     for (const [code, pair] of Object.entries(pairs)) {
+      if (events) pair.calendar = { events };
       const { out, state } = planPair(code, pair, now);
       out.forEach(m => console.log(`${code} → ${m.subId}: ${m.title} | ${m.body} | ${m.url}`));
       console.log(`${code} state`, JSON.stringify(state));
@@ -150,10 +201,27 @@ async function main() {
   const token = await accessToken(JSON.parse(saRaw));
   const api = (path, init) => fetch(`${db}/${path}.json?access_token=${encodeURIComponent(token)}`, init).then(async r => { if (!r.ok) throw new Error(`${init?.method || "GET"} ${path}: ${r.status} ${await r.text()}`); return r.json(); });
 
+  // Kalendář rehabky: jen čtení. Když se nepovede, zůstanou termíny z minula (nebo z plánu).
+  let events = null;
+  const ical = process.env.REHAB_ICAL_URL || publicIcal(R.calendar);
+  if (ical) {
+    try {
+      const res = await fetch(ical);
+      if (!res.ok) throw new Error(`${res.status}${process.env.REHAB_ICAL_URL ? "" : " (kalendář není veřejný? nastav secret REHAB_ICAL_URL)"}`);
+      events = parseIcs(await res.text(), now);
+      console.log(`Kalendář rehabky: ${events.length} ${plural(events.length, "termín", "termíny", "termínů")}.`);
+    } catch (e) { console.error(`Kalendář rehabky se nenačetl: ${e.message}`); }
+  }
+
   const pairs = await api("pairs") || {};
   let sent = 0, failed = 0, removed = 0;
   for (const [code, pair] of Object.entries(pairs)) {
-    if (!pair || !pair.push || !pair.push.subs) continue;
+    if (!pair) continue;
+    if (events && pair.profile && JSON.stringify((pair.calendar || {}).events || []) !== JSON.stringify(events)) {
+      pair.calendar = { events, updatedAt: now };
+      await api(`pairs/${code}/calendar`, { method: "PUT", body: JSON.stringify(pair.calendar) });
+    }
+    if (!pair.push || !pair.push.subs) continue;
     const { out, state } = planPair(code, pair, now);
     for (const m of out) {
       try {

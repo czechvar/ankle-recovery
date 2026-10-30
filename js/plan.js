@@ -25,7 +25,7 @@ window.PLAN = {
   rehab: {
     since: "2026-10-30",
     name: "Rehabka",
-    note: "Cviky od lékaře z rehabilitace. Jednou denně, všechny tři. Klidně rozděl během dne.",
+    note: "Cviky od lékaře z rehabilitace. Jednou denně, všechny. Klidně rozděl během dne.",
     clinic: { name: "IC klinika, Rehabilitace & Fitness", address: "Nové sady 676/4, Brno", phone: "+420 530 347 169", hours: "Po–Čt 7–15, Pá 7–12" },
     calendar: "https://calendar.google.com/calendar/u/0?cid=Mzg5NGViMDhlMDNhMDJjZjkwZmY0OGJjYjkwNmFhYjI1ODMyNWQzYzhkMTUyYzQ5MTRlYjcxNDRkOGMwMjNhZEBncm91cC5jYWxlbmRhci5nb29nbGUuY29t",
     items: [
@@ -33,7 +33,8 @@ window.PLAN = {
       { ex: "rhbband", sets: "3–4", reps: "15–20" },
       { ex: "rhbtap", sets: "3–4", reps: "15–20" }
     ],
-    // Termíny na klinice (z kalendáře Rehabka IC). Appka ukáže nejbližší.
+    // Termíny na klinice opsané z kalendáře Rehabka IC. Jen záloha: jakmile akce Upozornění
+    // načte kalendář (pairs/<kód>/calendar), appka i připomínky berou termíny odtud.
     visits: [
       { date: "2026-10-30", time: "8:00", what: "RHB #1" },
       { date: "2026-11-06", time: "8:30", what: "RHB #2" },
