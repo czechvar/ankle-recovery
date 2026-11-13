@@ -33,7 +33,8 @@ window.PLAN = {
     items: [
       { ex: "rhbhold", sets: "3–4", time: "40–45 s", from: "2026-10-30" },
       { ex: "rhbband", sets: "3–4", reps: "15–20", from: "2026-10-30" },
-      { ex: "rhbtap", sets: "3–4", reps: "15–20", from: "2026-10-30" }
+      { ex: "rhbtap", sets: "3–4", reps: "15–20", from: "2026-10-30" },
+      { ex: "rhbhop", sets: 4, time: "30 s", from: "2026-11-13" }
     ],
     // Termíny na klinice opsané z kalendáře Rehabka IC. Jen záloha: jakmile akce Upozornění
     // načte kalendář (pairs/<kód>/calendar), appka i připomínky berou termíny odtud.
@@ -46,7 +47,7 @@ window.PLAN = {
       { date: "2026-11-13", time: "9:30", what: "RHB #3" },
       { date: "2026-11-16", time: "8:45", what: "Laser #4" },
       { date: "2026-11-18", time: "8:45", what: "Laser #5" },
-      { date: "2026-11-20", time: "7:30", what: "RHB #4" }
+      { date: "2026-12-01", what: "RHB #4" }
     ]
   },
   phases: [
@@ -220,6 +221,14 @@ window.PLAN = {
       tip: "Začni opatrně, dopad má být slyšet jako plácnutí, ne dunění. Když šlacha druhé ráno reaguje, příště uber sérii.",
       gear: "Rám dveří nebo zeď na opření, rovná podlaha.",
       avoid: ["Tvrdý dopad na patu: dopadají špičky a přední část chodidla.", "Vysoké skoky: nohy zem neopouštějí, jen výpon a plácnutí.", "Cvičení při ostré bolesti."]
+    },
+    rhbhop: {
+      name: "Dynamické poskoky ve výponu", alias: "Rehabka · poskoky", type: "time", rest: "1 min",
+      why: "Cvik od lékaře, přidaný 13. 11. Drobné rychlé poskoky nahoře ve výponu: šlacha pruží a vrací energii, další krok k chůzi do schodů a běhu.",
+      steps: ["Stoupni si rovně, ruka může lehce na zeď nebo rám dveří.", "Zvedni se do výponu.", "Drobně poskakuj nahoře na špičkách, paty se země nedotýkají. 30 s, pak pauza; 4 opakování."],
+      tip: "Poskoky nízké a tiché, rychlost před výškou. Když šlacha druhé ráno reaguje, zkrať čas nebo uber opakování.",
+      gear: "Rovná podlaha, zeď nebo rám dveří na jištění.",
+      avoid: ["Dopad na paty: celou dobu jsi nahoře na přední části chodidla.", "Vysoké skoky.", "Cvičení při ostré bolesti."]
     },
     kb5: {
       name: "KB5: kettlebelly a protažení", alias: "Žolík", type: "time",
